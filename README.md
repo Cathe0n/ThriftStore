@@ -1,5 +1,5 @@
 # ThriftStore
-Shopping website project. | Semester 4
+Frontend for Shopping website project. | Semester 4
 
 Sigma Contributors.
 
