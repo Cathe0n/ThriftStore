@@ -1,0 +1,56 @@
+:root {
+    --header-height: 65px;
+  }
+  
+  .home {
+    width: 100%;
+    /* Removed height and overflow to allow scrolling */
+  }
+  
+  .hero-video-container {
+    position: relative;
+    height: calc(100vh - var(--header-height));
+    width: 100%;
+    overflow: hidden;
+  }
+  
+  .hero-video {
+    height: 100%;
+    width: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  
+  .play-pause-btn {
+    position: absolute;
+    bottom: 20px;
+    right: 30px;
+    background: rgba(255, 255, 255, 0.7);
+    border: none;
+    padding: 10px 12px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background 0.2s ease-in-out;
+  }
+  
+  .play-pause-btn:hover {
+    background: rgba(255, 255, 255, 1);
+  }
+  
+  .home-content {
+    padding: 60px 40px;
+    text-align: center;
+    background-color: #f8f8f8;
+  }
+  
+  .home-content h1 {
+    font-size: 2rem;
+    margin-bottom: 10px;
+  }
+  
+  .home-content p {
+    font-size: 1.2rem;
+    color: #333;
+  }
+  
