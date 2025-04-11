@@ -1,24 +1,27 @@
-import logo from './logo.svg';
-import './App.css';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
+import Home from "./pages/home/Home";
+import LoggedInHome from "./pages/home/LoggedInHome";
+import Header from "./components/header/Header";
+import HeaderLoggedIn from "./components/header/HeaderLoggedIn";
+
+function AppHeader() {
+  const location = useLocation();
+  return location.pathname.startsWith("/loggedin") ? <HeaderLoggedIn /> : <Header />;
+}
 
 function App() {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <AppHeader />
+      <Routes>
+        <Route path="/" element={<Navigate to="/women" />} />
+        <Route path="/women" element={<Home />} />
+        <Route path="/men" element={<Home />} />
+        <Route path="/kids" element={<Home />} />
+        <Route path="/loggedin" element={<LoggedInHome />} />
+        {/* Add other routes like wishlist, login, bag as needed */}
+      </Routes>
+    </Router>
   );
 }
 

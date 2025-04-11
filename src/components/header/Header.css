@@ -1,0 +1,76 @@
+.vero-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    border-bottom: 1px solid #ccc;
+    background-color: white;
+    font-family: Arial, sans-serif;
+  }
+  
+  .header-left,
+  .header-right {
+    display: flex;
+    gap: 30px;
+  }
+  
+  .header-left {
+    flex: 1;
+    justify-content: flex-start;
+  }
+  
+  .header-right {
+    flex: 1;
+    justify-content: flex-end;
+  }
+  
+  .header-center {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .logo {
+    height: 28px; /* smaller logo */
+    object-fit: contain;
+  }
+  
+  /* Link base style */
+  .nav-link {
+    position: relative;
+    text-decoration: none;
+    color: black;
+    font-weight: normal;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  /* Hover underline animation */
+  .nav-link::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%) scaleX(0);
+    transform-origin: center;
+    width: 100%;
+    height: 2px;
+    background-color: black;
+    transition: transform 0.3s ease-in-out;
+  }
+  
+  /* Show underline ONLY on hover */
+  .nav-link:hover::after {
+    transform: translateX(-50%) scaleX(1);
+  }
+  
+  /* Active state: bolded but no underline */
+  .active-link {
+    font-weight: bold;
+    color: black;
+  }
+  
+  /* Remove underline when selected (override hover/after) */
+  .active-link::after {
+    display: none;
+  }
+  
