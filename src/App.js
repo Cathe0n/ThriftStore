@@ -19,7 +19,7 @@ function App() {
         <Route path="/men" element={<Home />} />
         <Route path="/kids" element={<Home />} />
         <Route path="/loggedin" element={<LoggedInHome />} />
-        {/* Add other routes like wishlist, login, bag as needed */}
+        {/* Removed: <Route path="/login" element={<Login />} /> */}
       </Routes>
     </Router>
   );
