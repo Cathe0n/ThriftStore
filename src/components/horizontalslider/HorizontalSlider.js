@@ -1,7 +1,9 @@
 import React from "react";
 import "./HorizontalSlider.css";
+import { FaArrowRight } from "react-icons/fa";
+import ProductCard from "../productcard/ProductCard";
 
-function HorizontalSlider({ title, items, onSeeAll }) {
+function HorizontalSlider({ title, subtitle, items, onSeeAll, bgColor, centerText }) {
   const scrollRef = React.useRef();
 
   const scroll = (direction) => {
@@ -15,12 +17,20 @@ function HorizontalSlider({ title, items, onSeeAll }) {
   };
 
   return (
-    <div className="horizontal-slider">
-      <div className="slider-header">
-        <h2>{title}</h2>
-        <button className="see-all-btn" onClick={onSeeAll}>
-          See All
-        </button>
+    <div
+      className="horizontal-slider"
+      style={{ backgroundColor: bgColor || "transparent" }}
+    >
+      <div className={`slider-header ${centerText ? "center" : ""}`}>
+        <div>
+          <h2>{title}</h2>
+          {subtitle && <p className="slider-subtitle">{subtitle}</p>}
+        </div>
+        {!centerText && onSeeAll && (
+          <button className="see-all-btn" onClick={onSeeAll}>
+            See All <FaArrowRight size={12} />
+          </button>
+        )}
       </div>
 
       <div className="slider-wrapper">
@@ -28,8 +38,14 @@ function HorizontalSlider({ title, items, onSeeAll }) {
         <div className="slider" ref={scrollRef}>
           {items.map((item, index) => (
             <div className="slider-item" key={index}>
-              <img src={item.image} alt={item.name} />
-              <p>{item.name}</p>
+              {item.price !== undefined ? (
+                <ProductCard product={item} />
+              ) : (
+                <>
+                  <img src={item.image} alt={item.name} className="simple-card-image" />
+                  <p className="simple-card-name">{item.name}</p>
+                </>
+              )}
             </div>
           ))}
         </div>
