@@ -2,10 +2,22 @@ import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import "./Header.css";
 import logo from "../../assets/Vero.png";
-import PopLogin from "../popups/poplogin/PopLogin"; // ⬅️ import your new PopLogin component
+import PopLogin from "../popups/poplogin/PopLogin";
+import PopRegister from "../popups/popregister/PopRegister"; 
 
 function Header() {
   const [isLoginOpen, setLoginOpen] = useState(false);
+  const [isRegisterOpen, setRegisterOpen] = useState(false);
+
+  const openRegister = () => {
+    setLoginOpen(false);
+    setRegisterOpen(true);
+  };
+
+  const openLogin = () => {
+    setRegisterOpen(false);
+    setLoginOpen(true);
+  };
 
   return (
     <>
@@ -58,7 +70,6 @@ function Header() {
           >
             SHOPPING BAG
           </NavLink>
-          {/* Replaced the NavLink with a button to open login modal */}
           <button className="nav-link login-button" onClick={() => setLoginOpen(true)}>
             LOG IN
           </button>
@@ -66,7 +77,18 @@ function Header() {
       </header>
 
       {/* PopLogin Modal Component */}
-      <PopLogin isOpen={isLoginOpen} onClose={() => setLoginOpen(false)} />
+      <PopLogin 
+        isOpen={isLoginOpen} 
+        onClose={() => setLoginOpen(false)}
+        onSwitchToRegister={openRegister}
+      />
+      
+      {/* PopRegister Modal Component */}
+      <PopRegister
+        isOpen={isRegisterOpen}
+        onClose={() => setRegisterOpen(false)}
+        onSwitchToLogin={openLogin}
+      />
     </>
   );
 }

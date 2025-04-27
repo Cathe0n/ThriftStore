@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import "./PopLogin.css";
 import { useNavigate } from "react-router-dom";
 
-function PopLogin({ isOpen, onClose }) {
+function PopLogin({ isOpen, onClose, onSwitchToRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
@@ -25,7 +25,7 @@ function PopLogin({ isOpen, onClose }) {
   return (
     <div className="poplogin-overlay">
       <div className="poplogin-modal">
-        <button className="close-button" onClick={onClose}>×</button>
+        <button className="close-button" onClick={onClose}>x</button>
 
         <h1>LOGIN</h1>
         <p>Login with your email address</p>
@@ -65,7 +65,7 @@ function PopLogin({ isOpen, onClose }) {
 
         <button className="login-button" onClick={handleLogin}>LOGIN</button>
 
-        <div className="register-link" onClick={() => navigate("/register")}>
+        <div className="register-link" onClick={onSwitchToRegister}>
           Make an account
         </div>
       </div>
