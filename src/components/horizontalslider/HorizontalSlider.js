@@ -1,7 +1,7 @@
 import React from "react";
 import "./HorizontalSlider.css";
 import { FaArrowRight } from "react-icons/fa";
-import ProductCard from "../productcard/ProductCard";
+import CategoryCard from "../categorycard/CategoryCard";
 
 function HorizontalSlider({ title, subtitle, items, onSeeAll, bgColor, centerText }) {
   const scrollRef = React.useRef();
@@ -38,14 +38,7 @@ function HorizontalSlider({ title, subtitle, items, onSeeAll, bgColor, centerTex
         <div className="slider" ref={scrollRef}>
           {items.map((item, index) => (
             <div className="slider-item" key={index}>
-              {item.price !== undefined ? (
-                <ProductCard product={item} />
-              ) : (
-                <>
-                  <img src={item.image} alt={item.name} className="simple-card-image" />
-                  <p className="simple-card-name">{item.name}</p>
-                </>
-              )}
+              <CategoryCard category={item} />
             </div>
           ))}
         </div>

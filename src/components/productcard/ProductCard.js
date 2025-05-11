@@ -6,13 +6,11 @@ const ProductCard = ({ product }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(`product/`);
-    
+    navigate(`/productInformation/${product.id}`);
   };
+  
   return (
     <div className="product-card" onClick={handleClick}>
-      
-
       <div className="product-image">
         <img src={product.image} alt={product.name} />
       </div>
