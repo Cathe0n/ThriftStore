@@ -8,6 +8,7 @@ import HeaderLoggedIn from "./components/header/HeaderLoggedIn";
 import DashboardHeader from "./components/header/DashboardHeader";  
 import DashboardLoginHeader from "./components/header/DashboardLoginHeader";  
 import Product from "./pages/product/Product";  
+import ProductInformation from "./pages/productinformation/ProductInformation";
 
 function AppHeader() {
   const location = useLocation();
@@ -41,6 +42,7 @@ function App() {
         <Route path="/men/product" element={<Product />} />
         <Route path="/kids/product" element={<Product />} />
         <Route path="/loggedin" element={<LoggedInHome />} />
+        <Route path="/productInformation/:id" element={<ProductInformation />} />
         
 
         <Route path="/login-dashboard" element={<LoginDashboard />} />

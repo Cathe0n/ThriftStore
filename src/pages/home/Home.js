@@ -102,6 +102,8 @@ function Home() {
         items={categories}
         onSeeAll={handleSeeAllCategories}
       />
+
+      {/* Shop by category and brands requiret to use another components as it redirect to product page instead of product detail. */}
       <HorizontalSlider
         title="Shop By Brands"
         items={brands}
