@@ -6,7 +6,11 @@ const CategoryCard = ({ category }) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate(`/categories/${category.id}`);
+    // Convert category name to URL-friendly format
+    const categorySlug = category.name.toLowerCase()
+                          .replace(/\s+/g, '-')
+                          .replace(/[^\w-]+/g, '');
+    navigate(`product/${categorySlug}`); // Relative to current path
   };
   
   return (
