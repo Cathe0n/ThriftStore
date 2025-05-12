@@ -82,4 +82,13 @@
     cursor: pointer;
     padding: 0;
   }
+
+  .exit-button {
+    background: none;
+    border: none;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
+    padding: 0;
+  }
   

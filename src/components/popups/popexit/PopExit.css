@@ -1,0 +1,84 @@
+.popexit-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.popexit-modal {
+  position: relative;
+  background-color: white;
+  padding: 40px;
+  border-radius: 10px;
+  width: 350px;
+  max-width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+
+.popexit-modal h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.popexit-modal p {
+  font-size: 16px;
+  margin-bottom: 30px;
+}
+
+.exit-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.exit-cancel-button,
+.exit-confirm-button {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.exit-cancel-button {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+.exit-cancel-button:hover {
+  background-color: #e0e0e0;
+}
+
+.exit-confirm-button {
+  background-color: black;
+  color: white;
+}
+
+.exit-confirm-button:hover {
+  opacity: 0.9;
+}
+
+.popexit-modal .close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #333;
+  line-height: 1;
+}
