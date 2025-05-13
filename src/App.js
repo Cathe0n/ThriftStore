@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import Home from "./pages/home/Home";
-import LoggedInHome from "./pages/home/LoggedInHome";
 import Dashboard from "./pages/dashboard/Dashboard";
 import LoginDashboard from "./pages/login-dashboard/LoginDashboard";
 import Header from "./components/header/Header";
@@ -41,14 +40,14 @@ function App() {
         <Route path="/women/product" element={<Product />} />
         <Route path="/men/product" element={<Product />} />
         <Route path="/kids/product" element={<Product />} />
-        <Route path="/loggedin" element={<LoggedInHome />} />
-        <Route path="/loggedin/women" element={<LoggedInHome />} />
-        <Route path="/loggedin/men" element={<LoggedInHome />} />
-        <Route path="/loggedin/kids" element={<LoggedInHome />} />
+        <Route path="/loggedin" element={<Home />} />
+        <Route path="/loggedin/women" element={<Home />} />
+        <Route path="/loggedin/men" element={<Home />} />
+        <Route path="/loggedin/kids" element={<Home />} />
         <Route path="/productInformation/:id" element={<ProductInformation />} />
         
 
-        <Route path="/login-dashboard" element={<LoginDashboard />} />
+        <Route path="/loginadmin" element={<LoginDashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </Router>
