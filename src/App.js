@@ -9,10 +9,20 @@ import DashboardHeader from "./components/header/DashboardHeader";
 import DashboardLoginHeader from "./components/header/DashboardLoginHeader";  
 import Product from "./pages/product/Product";  
 import ProductInformation from "./pages/productinformation/ProductInformation";
+import { AdminLoginPage } from "./pages/Adminlogin-admin/AdminLoginPage";
+import AdminPage from './pages/Adminpage/Adminpage.js'
+
 
 function AppHeader() {
   const location = useLocation();
+
+  const noHeaderPaths = ["/adminloginpage", "/adminpage"];
   
+
+  if (noHeaderPaths.includes(location.pathname)) {
+    return null;
+  }
+
   if (location.pathname === "/login-dashboard") {
     return <DashboardLoginHeader />;
   }
@@ -46,8 +56,8 @@ function App() {
         <Route path="/loggedin/men" element={<LoggedInHome />} />
         <Route path="/loggedin/kids" element={<LoggedInHome />} />
         <Route path="/productInformation/:id" element={<ProductInformation />} />
-        
-
+        <Route path="/adminloginpage" element={<AdminLoginPage />} />
+        <Route path="/adminpage" element={<AdminPage />} />
         <Route path="/login-dashboard" element={<LoginDashboard />} />
         <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
