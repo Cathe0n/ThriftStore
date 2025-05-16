@@ -8,6 +8,9 @@ import DashboardHeader from "./components/header/DashboardHeader";
 import DashboardLoginHeader from "./components/header/DashboardLoginHeader";  
 import Product from "./pages/product/Product";  
 import ProductInformation from "./pages/productinformation/ProductInformation";
+import PrivateRoute from "./PrivateRoute";
+
+
 
 function AppHeader() {
   const location = useLocation();
@@ -30,27 +33,32 @@ function AppHeader() {
 
 function App() {
   return (
-    <Router>
-      <AppHeader />
-      <Routes>
-        <Route path="/" element={<Navigate to="/women" />} />
-        <Route path="/women" element={<Home />} />
-        <Route path="/men" element={<Home />} />
-        <Route path="/kids" element={<Home />} />
-        <Route path="/women/product" element={<Product />} />
-        <Route path="/men/product" element={<Product />} />
-        <Route path="/kids/product" element={<Product />} />
-        <Route path="/loggedin" element={<Home />} />
-        <Route path="/loggedin/women" element={<Home />} />
-        <Route path="/loggedin/men" element={<Home />} />
-        <Route path="/loggedin/kids" element={<Home />} />
-        <Route path="/productInformation/:id" element={<ProductInformation />} />
-        
+      <Router>
+        <AppHeader />
+        <Routes>
+          <Route path="/" element={<Navigate to="/women" />} />
+          <Route path="/women" element={<Home />} />
+          <Route path="/men" element={<Home />} />
+          <Route path="/kids" element={<Home />} />
+          <Route path="/women/product" element={<Product />} />
+          <Route path="/men/product" element={<Product />} />
+          <Route path="/kids/product" element={<Product />} />
+          
+          <Route path="/productInformation/:id" element={<ProductInformation />} />
+          
+          <Route path="/loginadmin" element={<LoginDashboard />} />
+          <Route path="/dashboard" element={<Dashboard />} />
 
-        <Route path="/loginadmin" element={<LoginDashboard />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-      </Routes>
-    </Router>
+          <Route
+          path="/loggedin"
+          element={
+            <PrivateRoute>
+              <Home />
+            </PrivateRoute>
+          }
+        />
+        </Routes>
+      </Router>
   );
 }
 
