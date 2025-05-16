@@ -1,117 +1,95 @@
 import React, { useState } from "react";
-import "./Editproductpage.css";
+import "./Adminlogin-admin.css"; 
 
-export const DashboardEditProductpage = () => {
-  const [product, setProduct] = useState({
-    type: "Ladies",
-    product: "T-Shirt",
-    name: "T-Shirt",
-    code: "L-S-BX027",
-    price: "350000",
-    stock: {
-      S: 1,
-      M: 2,
-      L: 3,
-      XL: 0
-    }
-  });
+export const AdminLoginPage = () => {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [employeeName, setEmployeeName] = useState("");
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setProduct(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleStockChange = (size, value) => {
-    setProduct(prev => ({
-      ...prev,
-      stock: { ...prev.stock, [size]: parseInt(value) || 0 }
-    }));
-  };
-
-  const handleSubmit = (e) => {
+  const handleLogin = (e) => {
     e.preventDefault();
-    console.log("Updated product:", product);
-    // Here you would typically send the data to your backend
-    alert("Product updated successfully!");
+    
+    if (email && password) {
+      setIsLoggedIn(true);
+      setEmployeeName("Admin User");
+      
+      if (rememberMe) {
+        localStorage.setItem("rememberedEmail", email);
+      }
+    }
   };
+
+  const handleLogout = () => {
+    setIsLoggedIn(false);
+    setEmployeeName("");
+  };
+
+  if (isLoggedIn) {
+    return (
+      <div className="dashboard-container">
+        <div className="dashboard-content">
+          <h1 className="dashboard-title">Welcome to your Dashboard</h1>
+          <p className="dashboard-subtitle">You are now logged in as {employeeName}.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="edit-product-container">
-      <h1>Edit Product</h1>
-      
-      <form onSubmit={handleSubmit}>
-        <div className="form-group">
-          <label>Type:</label>
-          <input
-            type="text"
-            name="type"
-            value={product.type}
-            onChange={handleInputChange}
-          />
+    <div className="login-page-container">
+      <div className="login-card">
+        <div className="login-header">
+          <h1 className="login-title">LOGIN</h1>
+          <p className="login-subtitle">
+            Please input your credentials below, for further information you may contact the IT team.
+          </p>
         </div>
-
-        <div className="form-group">
-          <label>Product Category:</label>
-          <input
-            type="text"
-            name="product"
-            value={product.product}
-            onChange={handleInputChange}
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Product Name:</label>
-          <input
-            type="text"
-            name="name"
-            value={product.name}
-            onChange={handleInputChange}
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Product Code:</label>
-          <input
-            type="text"
-            name="code"
-            value={product.code}
-            onChange={handleInputChange}
-          />
-        </div>
-
-        <div className="form-group">
-          <label>Price:</label>
-          <input
-            type="text"
-            name="price"
-            value={product.price}
-            onChange={handleInputChange}
-          />
-        </div>
-
-        <div className="stock-group">
-          <h3>Stock:</h3>
-          {Object.entries(product.stock).map(([size, quantity]) => (
-            <div key={size} className="stock-item">
-              <label>{size}:</label>
-              <input
-                type="number"
-                value={quantity}
-                onChange={(e) => handleStockChange(size, e.target.value)}
-                min="0"
-              />
-            </div>
-          ))}
-        </div>
-
-        <div className="button-group">
-          <button type="submit" className="save-btn">Save Changes</button>
-          <button type="button" className="cancel-btn">Cancel</button>
-        </div>
-      </form>
+        
+        <form className="login-form" onSubmit={handleLogin}>
+          <div className="input-group">
+            <label htmlFor="email" className="input-label">Email</label>
+            <input
+              id="email"
+              type="email"
+              className="input-field"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              required
+            />
+          </div>
+          
+          <div className="input-group">
+            <label htmlFor="password" className="input-label">Password</label>
+            <input
+              id="password"
+              type="password"
+              className="input-field"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Enter your password"
+              required
+            />
+          </div>
+          
+          <div className="remember-me-group">
+            <input
+              type="checkbox"
+              id="remember"
+              className="remember-checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+            />
+            <label htmlFor="remember" className="remember-label">Remember me</label>
+          </div>
+          
+          <button type="submit" className="Adminlogin-button">
+            LOGIN
+          </button>
+        </form>
+      </div>
     </div>
   );
 };
-
-export default DashboardEditProductpage;
