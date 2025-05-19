@@ -31,16 +31,27 @@ const trending = [
     price: 889000
   },
   {
+    image: "/images/burberry.webp",
+    name: "cropped trench jacket",
+    brand: "Burberry",
+    description: "cropped Gabardine trench jacket",
+    price: 23599000
+  },
+  {
+    image: "/images/dries.jpg",
+    name: "embellished crepe bustier top",
+    brand: "Dries Van Noten",
+    description: "embellished crepe bustier top",
+    price: 889000
+  },
+  {
     image: "/images/burberry.jpg",
     name: "cropped trench jacket",
     brand: "Burberry",
     description: "cropped Gabardine trench jacket",
     price: 23599000
   },
-  // ...other items
 ];
-
-
 
 
 function Home() {

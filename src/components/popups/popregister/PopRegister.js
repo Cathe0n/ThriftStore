@@ -1,20 +1,20 @@
 import React, { useState } from "react";
+import axios from "axios";
 import "../popups.css";
 import { useNavigate } from "react-router-dom";
 
 function PopRegister({ isOpen, onClose, onSwitchToLogin }) {
-  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  const handleRegister = () => {
-    // Basic validation
-    if (!name || !email || !password) {
+  const handleRegister = async () => {
+    if (!email || !password) {
       setError("All fields are required.");
       return;
     }
@@ -24,12 +24,45 @@ function PopRegister({ isOpen, onClose, onSwitchToLogin }) {
       return;
     }
 
-    // Here you would typically call your registration API
-    // For demo purposes, we'll just navigate to loggedin
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters.");
+      return;
+    }
+
+    setIsLoading(true);
     setError("");
-    onClose();
-    navigate("/loggedin");
+
+    try {
+      const response = await axios.post("http://localhost:8080/public", {
+        query: `
+          mutation Register($email: String!, $password: String!) {
+            register(email: $email, password: $password) {
+              email
+              password
+            }
+          }
+        `,
+        variables: {
+          email,
+          password,
+        },
+      });
+
+      const data = response.data;
+      if (data?.data?.register) {
+        onClose();
+        navigate("/loggedin");
+      } else {
+        const errorMsg = data.errors?.[0]?.message || "Registration failed.";
+        setError(errorMsg);
+      }
+    } catch (err) {
+      setError(err.response?.data?.errors?.[0]?.message || err.message || "Registration failed.");
+    } finally {
+      setIsLoading(false);
+    }
   };
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -39,20 +72,9 @@ function PopRegister({ isOpen, onClose, onSwitchToLogin }) {
   return (
     <div className="popup-overlay">
       <div className="popup-modal">
-        <button className="close-button" onClick={onClose}>
-          x
-        </button>
-
+        <button className="close-button" onClick={onClose}>×</button>
         <h1>REGISTER</h1>
         <p>Create a new account</p>
-
-        <label>Full Name</label>
-        <input
-          type="text"
-          placeholder="Enter your full name"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
 
         <label>Email</label>
         <input
@@ -63,23 +85,22 @@ function PopRegister({ isOpen, onClose, onSwitchToLogin }) {
         />
 
         <label>Password</label>
-        <input
-          type="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-
-        <div className="options">
-          <label>
-            <input
-              type="checkbox"
-              checked={showPassword}
-              onChange={togglePasswordVisibility}
-            />
-            Show Password
-          </label>
+        <div className="password-input-container">
+          <input
+            type={showPassword ? "text" : "password"}
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <button
+            type="button"
+            className="password-toggle"
+            onClick={togglePasswordVisibility}
+          >
+            {showPassword ? "Hide" : "Show"}
+          </button>
         </div>
+
         <div className="options">
           <label>
             <input
@@ -90,10 +111,15 @@ function PopRegister({ isOpen, onClose, onSwitchToLogin }) {
             By making an account you are agreeing with the terms and conditions*
           </label>
         </div>
+
         {error && <p className="error">{error}</p>}
 
-        <button className="action-button" onClick={handleRegister}>
-          REGISTER
+        <button
+          className="action-button"
+          onClick={handleRegister}
+          disabled={isLoading}
+        >
+          {isLoading ? "Registering..." : "REGISTER"}
         </button>
 
         <div className="switch-action" onClick={onSwitchToLogin}>

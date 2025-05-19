@@ -1,6 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
 import Home from "./pages/home/Home";
-import LoggedInHome from "./pages/home/LoggedInHome";
 import Dashboard from "./pages/dashboard/Dashboard";
 import LoginDashboard from "./pages/login-dashboard/LoginDashboard";
 import Header from "./components/header/Header";
@@ -11,6 +10,7 @@ import Product from "./pages/product/Product";
 import ProductInformation from "./pages/productinformation/ProductInformation";
 import { AdminLoginPage } from "./pages/Adminlogin-admin/AdminLoginPage";
 import AdminPage from './pages/Adminpage/Adminpage.js'
+import PrivateRoute from "./PrivateRoute";
 
 
 function AppHeader() {
@@ -41,27 +41,36 @@ function AppHeader() {
 
 function App() {
   return (
-    <Router>
-      <AppHeader />
-      <Routes>
-        <Route path="/" element={<Navigate to="/women" />} />
-        <Route path="/women" element={<Home />} />
-        <Route path="/men" element={<Home />} />
-        <Route path="/kids" element={<Home />} />
-        <Route path="/women/product" element={<Product />} />
-        <Route path="/men/product" element={<Product />} />
-        <Route path="/kids/product" element={<Product />} />
-        <Route path="/loggedin" element={<LoggedInHome />} />
-        <Route path="/loggedin/women" element={<LoggedInHome />} />
-        <Route path="/loggedin/men" element={<LoggedInHome />} />
-        <Route path="/loggedin/kids" element={<LoggedInHome />} />
-        <Route path="/productInformation/:id" element={<ProductInformation />} />
-        <Route path="/adminloginpage" element={<AdminLoginPage />} />
-        <Route path="/adminpage" element={<AdminPage />} />
-        <Route path="/login-dashboard" element={<LoginDashboard />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-      </Routes>
-    </Router>
+
+      <Router>
+        <AppHeader />
+        <Routes>
+          <Route path="/" element={<Navigate to="/women" />} />
+          <Route path="/women" element={<Home />} />
+          <Route path="/men" element={<Home />} />
+          <Route path="/kids" element={<Home />} />
+          <Route path="/women/product" element={<Product />} />
+          <Route path="/men/product" element={<Product />} />
+          <Route path="/kids/product" element={<Product />} />
+          <Route path="/loggedin" element={<LoggedInHome />} />
+          <Route path="/loggedin/women" element={<LoggedInHome />} />
+          <Route path="/loggedin/men" element={<LoggedInHome />} />
+          <Route path="/loggedin/kids" element={<LoggedInHome />} />
+          <Route path="/productInformation/:id" element={<ProductInformation />} />
+          <Route path="/adminloginpage" element={<AdminLoginPage />} />
+          <Route path="/adminpage" element={<AdminPage />} />
+
+
+          <Route
+          path="/loggedin"
+          element={
+            <PrivateRoute>
+              <Home />
+            </PrivateRoute>
+          }
+        />
+        </Routes>
+      </Router>
   );
 }
 
