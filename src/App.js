@@ -12,7 +12,7 @@ import ProductInformation from "./pages/productinformation/ProductInformation";
 import { AdminLoginPage } from "./pages/Adminlogin-admin/AdminLoginPage";
 import AdminPage from './pages/Adminpage/Adminpage.js'
 import PrivateRoute from "./PrivateRoute";
-import LoggedInHome from "./pages/home/LoggedInHome"; // Assuming this file exists
+import LoggedInHome from "./pages/home/Home.js"; 
 
 // Initialize Apollo Client
 const client = new ApolloClient({
