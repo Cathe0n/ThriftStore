@@ -5,19 +5,22 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import LoginDashboard from "./pages/login-dashboard/LoginDashboard";
 import Header from "./components/header/Header";
 import HeaderLoggedIn from "./components/header/HeaderLoggedIn";
-import DashboardHeader from "./components/header/DashboardHeader";  
-import DashboardLoginHeader from "./components/header/DashboardLoginHeader";  
-import Product from "./pages/product/Product";  
+import DashboardHeader from "./components/header/DashboardHeader";
+import DashboardLoginHeader from "./components/header/DashboardLoginHeader";
+import Product from "./pages/product/Product";
 import ProductInformation from "./pages/productinformation/ProductInformation";
+import { AdminLoginPage } from "./pages/Adminlogin-admin/AdminLoginPage";
+import AdminPage from './pages/Adminpage/Adminpage.js'
 import PrivateRoute from "./PrivateRoute";
+import LoggedInHome from "./pages/home/LoggedInHome"; // Assuming this file exists
 
-// Initialize Apollo Client with your correct endpoint
+// Initialize Apollo Client
 const client = new ApolloClient({
-  uri: 'http://localhost:8080/public', // Updated to match your Postman endpoint
+  uri: 'http://localhost:8080/public',
   cache: new InMemoryCache(),
 });
 
-// API Service with proper query formatting
+// API Service for products by category
 export const getProductsByCategory = async (gender, category) => {
   const query = gql`
     query GetProductsByCategory($categoryType: String!) {
@@ -32,9 +35,8 @@ export const getProductsByCategory = async (gender, category) => {
     }
   `;
 
-  // Format matches your Postman test (e.g., "Women's Tops")
   const categoryType = `${gender}'s ${category}`;
-  
+
   try {
     const { data } = await client.query({
       query,
@@ -49,19 +51,12 @@ export const getProductsByCategory = async (gender, category) => {
 
 function AppHeader() {
   const location = useLocation();
-  
-  if (location.pathname === "/login-dashboard") {
-    return <DashboardLoginHeader />;
-  }
-  
-  if (location.pathname === "/dashboard") {
-    return <DashboardHeader />;
-  }
+  const noHeaderPaths = ["/adminloginpage", "/adminpage"];
 
-  if (location.pathname.startsWith("/loggedin")) {
-    return <HeaderLoggedIn />;
-  }
-  
+  if (noHeaderPaths.includes(location.pathname)) return null;
+  if (location.pathname === "/login-dashboard") return <DashboardLoginHeader />;
+  if (location.pathname === "/dashboard") return <DashboardHeader />;
+  if (location.pathname.startsWith("/loggedin")) return <HeaderLoggedIn />;
   return <Header />;
 }
 
@@ -81,6 +76,12 @@ function App() {
           <Route path="/productInformation/:id" element={<ProductInformation />} />
           <Route path="/loginadmin" element={<LoginDashboard />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/loggedin" element={<LoggedInHome />} />
+          <Route path="/loggedin/women" element={<LoggedInHome />} />
+          <Route path="/loggedin/men" element={<LoggedInHome />} />
+          <Route path="/loggedin/kids" element={<LoggedInHome />} />
+          <Route path="/adminloginpage" element={<AdminLoginPage />} />
+          <Route path="/adminpage" element={<AdminPage />} />
           <Route
             path="/loggedin"
             element={
