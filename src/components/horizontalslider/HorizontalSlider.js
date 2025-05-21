@@ -3,7 +3,17 @@ import "./HorizontalSlider.css";
 import { FaArrowRight } from "react-icons/fa";
 import CategoryCard from "../categorycard/CategoryCard";
 
-function HorizontalSlider({ title, subtitle, items, onSeeAll, bgColor, centerText }) {
+function HorizontalSlider({ 
+  title, 
+  subtitle, 
+  items, 
+  onSeeAll, 
+  onItemClick, // New prop for handling individual item clicks
+  bgColor, 
+  centerText,
+  isProductData = false,
+  loading = false
+}) {
   const scrollRef = React.useRef();
 
   const scroll = (direction) => {
@@ -13,6 +23,12 @@ function HorizontalSlider({ title, subtitle, items, onSeeAll, bgColor, centerTex
         left: direction === "left" ? -scrollAmount : scrollAmount,
         behavior: "smooth",
       });
+    }
+  };
+
+  const handleItemClick = (item) => {
+    if (onItemClick) {
+      onItemClick(item);
     }
   };
 
@@ -36,11 +52,29 @@ function HorizontalSlider({ title, subtitle, items, onSeeAll, bgColor, centerTex
       <div className="slider-wrapper">
         <button className="scroll-btn left" onClick={() => scroll("left")}>‹</button>
         <div className="slider" ref={scrollRef}>
-          {items.map((item, index) => (
-            <div className="slider-item" key={index}>
-              <CategoryCard category={item} />
+          {loading ? (
+            <div className="slider-loading">
+              {[...Array(4)].map((_, i) => (
+                <div className="slider-item loading" key={i}>
+                  <div className="loading-card"></div>
+                </div>
+              ))}
             </div>
-          ))}
+          ) : (
+            items.map((item, index) => (
+              <div 
+                className="slider-item" 
+                key={index}
+                onClick={() => !isProductData && handleItemClick(item)}
+                style={{ cursor: !isProductData ? 'pointer' : 'default' }}
+              >
+                <CategoryCard 
+                  item={item} 
+                  isProduct={isProductData} 
+                />
+              </div>
+            ))
+          )}
         </div>
         <button className="scroll-btn right" onClick={() => scroll("right")}>›</button>
       </div>

@@ -5,60 +5,75 @@ import VeroVideo from "../../assets/VeroVideo.mp4";
 import { FaPlay, FaPause } from "react-icons/fa";
 import HorizontalSlider from "../../components/horizontalslider/HorizontalSlider";
 import SpecialSlider from "../../components/specialslider/SpecialSlider";
-
-// Dummy data for now, can be replaced later with MongoDB data
-const categories = [
-  { name: 'Tops', image: '/images/tops.jpg' },
-  { name: 'Sweater & Hoodie', image: '/images/hoodies.jpg' },
-  { name: 'Bottoms', image: '/images/bottoms.jpg' },
-  { name: 'Activewear', image: '/images/activewear.webp' },
-  { name: 'Outerwear', image: '/images/outerwear.jpg' },
-];
-
-const brands = [
-  { name: 'Adidas', image: '/brands/adidas.webp' },
-  { name: 'Nike', image: '/brands/nike.jpg' },
-  { name: 'Loro Piana', image: '/brands/loro.jpg' },
-  { name: 'Louis Vuitton', image: '/brands/lv.jpg' },
-  { name: 'H&M', image: '/brands/hm.jpg' },
-];
-const trending = [
-  {
-    image: "/images/dries.jpg",
-    name: "embellished crepe bustier top",
-    brand: "Dries Van Noten",
-    description: "embellished crepe bustier top",
-    price: 889000
-  },
-  {
-    image: "/images/burberry.webp",
-    name: "cropped trench jacket",
-    brand: "Burberry",
-    description: "cropped Gabardine trench jacket",
-    price: 23599000
-  },
-  {
-    image: "/images/dries.jpg",
-    name: "embellished crepe bustier top",
-    brand: "Dries Van Noten",
-    description: "embellished crepe bustier top",
-    price: 889000
-  },
-  {
-    image: "/images/burberry.jpg",
-    name: "cropped trench jacket",
-    brand: "Burberry",
-    description: "cropped Gabardine trench jacket",
-    price: 23599000
-  },
-];
-
+import { getProductsByCategory } from "../../App";
+import ChatBot from "../../components/popups/chatbot/ChatBot";
 
 function Home() {
   const videoRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(true);
+  const [loadingCategories, setLoadingCategories] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Get gender from URL (women/men/kids)
+  const currentGender = () => {
+    if (location.pathname.includes("women")) return "Women";
+    if (location.pathname.includes("men")) return "Men";
+    if (location.pathname.includes("kids")) return "Kids";
+    return "Unisex";
+  };
+
+  // Hardcoded categories with click handlers
+  const categories = [
+    { name: 'Tops', image: '/images/tops.jpg', value: 'Tops' },
+    { name: 'Sweater & Hoodie', image: '/images/hoodies.jpg', value: 'Sweater' },
+    { name: 'Bottoms', image: '/images/bottoms.jpg', value: 'Bottoms' },
+    { name: 'Activewear', image: '/images/activewear.webp', value: 'Activewear' },
+    { name: 'Outerwear', image: '/images/outerwear.jpg', value: 'Outerwear' },
+  ];
+
+  const brands = [
+    { name: 'Adidas', image: '/brands/adidas.webp' },
+    { name: 'Nike', image: '/brands/nike.jpg' },
+    { name: 'Loro Piana', image: '/brands/loro.jpg' },
+    { name: 'Louis Vuitton', image: '/brands/lv.jpg' },
+    { name: 'H&M', image: '/brands/hm.jpg' },
+  ];
+
+  const trending = [
+    {
+      image: "/images/dries.jpg",
+      name: "embellished crepe bustier top",
+      brand: "Dries Van Noten",
+      price: 889000
+    },
+    {
+      image: "/images/burberry.webp",
+      name: "cropped trench jacket",
+      brand: "Burberry",
+      price: 23599000
+    },
+  ];
+
+  const handleCategoryClick = async (category) => {
+    try {
+      setLoadingCategories(true);
+      const products = await getProductsByCategory(currentGender(), category.value);
+      
+      navigate("/product", { 
+        state: { 
+          products,
+          category: `${currentGender()}'s ${category.name}`,
+          gender: currentGender()
+        }
+      });
+    } catch (error) {
+      console.error("API Error:", error);
+      navigate("/error", { state: { error: "Failed to load products" } });
+    } finally {
+      setLoadingCategories(false);
+    }
+  };
 
   const togglePlayback = () => {
     if (videoRef.current) {
@@ -69,13 +84,6 @@ function Home() {
       }
       setIsPlaying(!isPlaying);
     }
-  };
-
-  const getSection = () => {
-    if (location.pathname.includes("women")) return "Women";
-    if (location.pathname.includes("men")) return "Men";
-    if (location.pathname.includes("kids")) return "Kids";
-    return "Everyone";
   };
 
   const handleSeeAllCategories = () => {
@@ -103,29 +111,37 @@ function Home() {
       </div>
 
       <div className="home-content">
-        <h1>Welcome to VERO Thrift Store – {getSection()}</h1>
+        <h1>Welcome to VERO Thrift Store – {currentGender()}</h1>
         <p>Please log in to access exclusive deals.</p>
       </div>
 
-      {/* 👕 Category & Brand Sliders */}
+      {/* Shop By Category - With API integration */}
       <HorizontalSlider
         title="Shop By Category"
         items={categories}
+        onItemClick={handleCategoryClick}
         onSeeAll={handleSeeAllCategories}
+        bgColor="#f8f8f8"
+        loading={loadingCategories}
       />
 
-      {/* Shop by category and brands requiret to use another components as it redirect to product page instead of product detail. */}
+      {/* Shop By Brands */}
       <HorizontalSlider
         title="Shop By Brands"
         items={brands}
         onSeeAll={handleSeeAllBrands}
+        bgColor="#f8f8f8"
       />
+
+      {/* Trending Products */}
       <SpecialSlider
-      title="Trending Pieces"
-      subtitle="What's hot right now"
-      items={trending}
-      themeColor="#9A4949" // red
+        title="Trending Pieces"
+        subtitle="What's hot right now"
+        items={trending}
+        themeColor="#9A4949"
       />
+
+      <ChatBot />
     </div>
   );
 }
