@@ -1,5 +1,7 @@
+// src/App.js
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from "react-router-dom";
-import { ApolloClient, InMemoryCache, ApolloProvider, gql } from '@apollo/client';
+import { ApolloProvider } from '@apollo/client';
+import client from './apollo/client';
 import Home from "./pages/home/Home";
 import Dashboard from "./pages/dashboard/Dashboard";
 import LoginDashboard from "./pages/login-dashboard/LoginDashboard";
@@ -13,41 +15,6 @@ import { AdminLoginPage } from "./pages/Adminlogin-admin/AdminLoginPage";
 import AdminPage from './pages/Adminpage/Adminpage.js'
 import PrivateRoute from "./PrivateRoute";
 import LoggedInHome from "./pages/home/Home.js"; 
-
-// Initialize Apollo Client
-const client = new ApolloClient({
-  uri: 'http://localhost:8080/public',
-  cache: new InMemoryCache(),
-});
-
-// API Service for products by category
-export const getProductsByCategory = async (gender, category) => {
-  const query = gql`
-    query GetProductsByCategory($categoryType: String!) {
-      getProductbyCategory(category_type: $categoryType) {
-        id
-        product_name
-        price
-        gender
-        brand
-        imagePath
-      }
-    }
-  `;
-
-  const categoryType = `${gender}'s ${category}`;
-
-  try {
-    const { data } = await client.query({
-      query,
-      variables: { categoryType },
-    });
-    return data.getProductbyCategory;
-  } catch (error) {
-    console.error("GraphQL Error:", error);
-    throw error;
-  }
-};
 
 function AppHeader() {
   const location = useLocation();

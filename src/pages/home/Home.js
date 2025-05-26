@@ -5,7 +5,6 @@ import VeroVideo from "../../assets/VeroVideo.mp4";
 import { FaPlay, FaPause } from "react-icons/fa";
 import HorizontalSlider from "../../components/horizontalslider/HorizontalSlider";
 import SpecialSlider from "../../components/specialslider/SpecialSlider";
-import { getProductsByCategory } from "../../App";
 import ChatBot from "../../components/popups/chatbot/ChatBot";
 
 function Home() {
@@ -56,23 +55,15 @@ function Home() {
   ];
 
   const handleCategoryClick = async (category) => {
-    try {
-      setLoadingCategories(true);
-      const products = await getProductsByCategory(currentGender(), category.value);
-      
-      navigate("/product", { 
-        state: { 
-          products,
-          category: `${currentGender()}'s ${category.name}`,
-          gender: currentGender()
-        }
-      });
-    } catch (error) {
-      console.error("API Error:", error);
-      navigate("/error", { state: { error: "Failed to load products" } });
-    } finally {
-      setLoadingCategories(false);
-    }
+    const categoryType = `${currentGender()}'s ${category.value}`;
+    
+    navigate("/product", { 
+      state: { 
+        categoryType,
+        category: `${currentGender()}'s ${category.name}`,
+        gender: currentGender()
+      }
+    });
   };
 
   const togglePlayback = () => {
