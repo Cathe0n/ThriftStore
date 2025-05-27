@@ -1,0 +1,23 @@
+/* src/components/selecteditems/SelectedItems.css */
+.selected-item {
+  display: flex;
+  border: 1px solid #aaa;
+  padding: 20px;
+  align-items: center;
+  gap: 20px;
+}
+
+.item-image {
+  width: 100px;
+  height: 120px;
+  background-color: #ccc;
+}
+
+.item-details {
+  font-size: 14px;
+}
+
+.item-details strong {
+  display: block;
+  margin-bottom: 5px;
+}

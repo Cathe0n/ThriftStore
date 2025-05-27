@@ -1,0 +1,44 @@
+/* src/pages/shoppingbag.css */
+.shoppingbag-container {
+  padding: 10px 20px 20px 20px; /* top right bottom left */
+}
+
+
+.location-box {
+  border: 1px solid #aaa;
+  padding: 20px;
+  margin-bottom: 20px;
+  margin-top: 10px;
+}
+
+.content-area {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.items-list {
+  flex: 2;
+  max-height: 400px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.payment-summary {
+  flex: 1;
+  border: 1px solid #aaa;
+  padding: 20px;
+}
+
+.pay-now {
+  margin-top: 20px;
+  padding: 12px;
+  width: 100%;
+  background-color: black;
+  color: white;
+  font-weight: bold;
+  border: none;
+  cursor: pointer;
+}

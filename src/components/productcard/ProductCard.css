@@ -1,6 +1,5 @@
 .product-card {
   background-color: transparent;
-  color: white !important;
   width: 250px;
   display: flex;
   flex-direction: column;
@@ -12,15 +11,16 @@
 }
 
 .product-image-wrapper {
-  position: relative;
+  width: 100%;
+  height: 300px;
+  overflow: hidden;
+  border-radius: 4px;
+  background-color: #d9d9d9;
 }
 
 .product-image {
   width: 100%;
-  height: 300px;
-  background-color: #d9d9d9;
-  border-radius: 4px;
-  margin-bottom: 6px;
+  height: 100%;
   object-fit: cover;
 }
 
@@ -36,7 +36,14 @@
   margin: 0;
   padding: 0;
   line-height: 1.2;
-  color: white !important;
+}
+
+.text-white p {
+  color: white;
+}
+
+.text-black p {
+  color: black;
 }
 
 p.product-brand {
@@ -52,4 +59,16 @@ p.product-price {
   font-weight: 700;
   font-size: 0.9rem;
   margin-top: 4px;
+}
+
+.add-to-cart-button {
+  margin-top: 12px;
+  padding: 10px 0;
+  background-color: black;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  width: 100%;
 }
