@@ -36,6 +36,7 @@ function App() {
           <Route path="/" element={<Navigate to="/women" />} />
           <Route path="/women" element={<Home />} />
           <Route path="/men" element={<Home />} />
+          <Route path="/product" element={<Product />} />
           <Route path="/kids" element={<Home />} />
           <Route path="/women/product" element={<Product />} />
           <Route path="/men/product" element={<Product />} />
