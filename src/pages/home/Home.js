@@ -14,7 +14,6 @@ function Home() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Get gender from URL (women/men/kids)
   const currentGender = () => {
     if (location.pathname.includes("women")) return "Women";
     if (location.pathname.includes("men")) return "Men";
@@ -22,14 +21,37 @@ function Home() {
     return "Unisex";
   };
 
-  // Hardcoded categories with click handlers
-  const categories = [
-    { name: 'Tops', image: '/images/tops.jpg', value: 'Tops' },
-    { name: 'Sweater & Hoodie', image: '/images/hoodies.jpg', value: 'Sweater' },
-    { name: 'Bottoms', image: '/images/bottoms.jpg', value: 'Bottoms' },
-    { name: 'Activewear', image: '/images/activewear.webp', value: 'Activewear' },
-    { name: 'Outerwear', image: '/images/outerwear.jpg', value: 'Outerwear' },
-  ];
+  const gender = currentGender();
+
+  // Dynamic category list based on gender
+  const categoriesByGender = {
+    Women: [
+      { name: "Tops", image: "/categories/women/tops.jpg", value: "Tops" },
+      { name: "Sweaters & Hoodies", image: "/categories/women/hoodies.jpg", value: "Sweaters & Hoodies" },
+      { name: "Bottoms", image: "/categories/women/bottoms.jpg", value: "Bottoms" },
+      { name: "Activewear", image: "/categories/women/activewear.webp", value: "Activewear" },
+      { name: "Dresses & Skirts", image: "/categories/women/dresses.webp", value: "Dresses & Skirts" },
+      { name: "Outerwear", image: "/categories/women/outerwear.jpg", value: "Outerwear" },
+    ],
+    Men: [
+      { name: "Tops", image: "/categories/men/tops.jpg", value: "Tops" },
+      { name: "Sweaters & Hoodies", image: "/categories/men/sweaters.jpg", value: "Sweaters & Hoodies" },
+      { name: "Bottoms", image: "/categories/men/bottoms.webp", value: "Bottoms" },
+      { name: "Activewear", image: "/categories/men/activewear.jpeg", value: "Activewear" },
+      { name: "Outerwear", image: "/categories/men/outerwear.avif", value: "Outerwear" },
+      { name: "Loungewear", image: "/categories/men/loungewear.webp", value: "Loungewear" },
+    ],
+    Kids: [
+      { name: "Tops", image: "/categories/kids/tops.jpeg", value: "Tops" },
+      { name: "Sweaters & Hoodies", image: "/categories/kids/sweaters.jpg", value: "Sweaters & Hoodies" },
+      { name: "Bottoms", image: "/categories/kids/bottoms.avif", value: "Bottoms" },
+      { name: "Activewear", image: "/categories/kids/activewear.jpg", value: "Activewear" },
+      { name: "Outerwear", image: "/categories/kids/outerwear.webp", value: "Outerwear" },
+      { name: "Loungewear & Pajamas", image: "/categories/kids/pajamas.webp", value: "Loungewear & Pajamas" },
+    ],
+  };
+
+  const categories = categoriesByGender[gender] || [];
 
   const brands = [
     { name: 'Adidas', image: '/brands/adidas.webp' },
@@ -41,13 +63,13 @@ function Home() {
 
   const trending = [
     {
-      image: "/images/dries.jpg",
+      image: "/images/women/dries.jpg",
       name: "embellished crepe bustier top",
       brand: "Dries Van Noten",
       price: 889000
     },
     {
-      image: "/images/burberry.webp",
+      image: "/images/women/burberry.jpg",
       name: "cropped trench jacket",
       brand: "Burberry",
       price: 23599000
@@ -55,13 +77,13 @@ function Home() {
   ];
 
   const handleCategoryClick = async (category) => {
-    const categoryType = `${currentGender()}'s ${category.value}`;
-    
-    navigate("/product", { 
-      state: { 
+    const categoryType = `${gender}'s ${category.value}`;
+
+    navigate("/product", {
+      state: {
         categoryType,
-        category: `${currentGender()}'s ${category.name}`,
-        gender: currentGender()
+        category: `${gender}'s ${category.name}`,
+        gender
       }
     });
   };
@@ -102,7 +124,7 @@ function Home() {
       </div>
 
       <div className="home-content">
-        <h1>Welcome to VERO Thrift Store – {currentGender()}</h1>
+        <h1>Welcome to VERO Thrift Store – {gender}</h1>
         <p>Please log in to access exclusive deals.</p>
       </div>
 
@@ -111,7 +133,6 @@ function Home() {
         title="Shop By Category"
         items={categories}
         onItemClick={handleCategoryClick}
-        onSeeAll={handleSeeAllCategories}
         bgColor="#f8f8f8"
         loading={loadingCategories}
       />
@@ -130,6 +151,7 @@ function Home() {
         subtitle="What's hot right now"
         items={trending}
         themeColor="#9A4949"
+        titleColor="white"
       />
 
       <ChatBot />

@@ -3,7 +3,7 @@ import React, { useRef } from "react";
 import "./SpecialSlider.css";
 import ProductCard from "../productcard/ProductCard";
 
-const SpecialSlider = ({ title, subtitle, items, themeColor = "#8A3A3A", centerText = true }) => {
+const SpecialSlider = ({ title, subtitle, items, themeColor = "#8A3A3A", centerText = true, titleColor = "white" }) => {
   const scrollRef = useRef(null);
 
   const scroll = (direction) => {
@@ -21,7 +21,7 @@ const SpecialSlider = ({ title, subtitle, items, themeColor = "#8A3A3A", centerT
       <div className="special-slider">
         <div className={`slider-header ${centerText ? "center" : ""}`}>
           <div>
-            <h2>{title}</h2>
+            <h2 style={{ color: titleColor }}>{title}</h2>
             {subtitle && <p className="slider-subtitle">{subtitle}</p>}
           </div>
         </div>
