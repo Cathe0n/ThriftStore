@@ -15,6 +15,8 @@ import { AdminLoginPage } from "./pages/Adminlogin-admin/AdminLoginPage";
 import AdminPage from './pages/Adminpage/Adminpage.js'
 import PrivateRoute from "./PrivateRoute";
 import LoggedInHome from "./pages/home/Home.js"; 
+import ShoppingBag from "./pages/shoppingbag/ShoppingBag.js"; 
+import Wishlist from "./pages/wishlist/Wishlist";
 
 function AppHeader() {
   const location = useLocation();
@@ -50,6 +52,8 @@ function App() {
           <Route path="/loggedin/kids" element={<LoggedInHome />} />
           <Route path="/adminloginpage" element={<AdminLoginPage />} />
           <Route path="/adminpage" element={<AdminPage />} />
+          <Route path="/bag" element={<ShoppingBag />} />
+          <Route path="/wishlist" element={<Wishlist />} />
           <Route
             path="/loggedin"
             element={
