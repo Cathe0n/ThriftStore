@@ -2,7 +2,7 @@ import React from "react";
 import { useLocation } from "react-router-dom";
 import { useQuery } from "@apollo/client";
 import { GET_PRODUCTS_BY_CATEGORY } from "../../graphql/mutations";
-import ProductCard from "../../components/productcard/ProductCard";
+import ProductDisplay from "../../components/productdisplay/ProductDisplay";
 import "./Product.css";
 
 
@@ -35,7 +35,7 @@ function Product() {
       {/* Render product cards */}
       <div className="product-grid">
         {products.map(product => (  
-          <ProductCard
+          <ProductDisplay
             key={product.id} 
             product={product}
           />
