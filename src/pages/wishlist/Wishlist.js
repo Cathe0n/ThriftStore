@@ -6,19 +6,19 @@ import { FaTimes } from "react-icons/fa";
 const Wishlist = () => {
   const [wishlistItems, setWishlistItems] = useState([
     {
-      image: "/images/dries.jpg",
+      image: "/images/women/dries.jpg",
       name: "embellished crepe bustier top",
       brand: "Dries Van Noten",
       price: 889000,
     },
     {
-      image: "/images/burberry.webp",
+      image: "/images/women/burberry.jpg",
       name: "cropped trench jacket",
       brand: "Burberry",
       price: 23599000,
     },
     {
-      image: "/images/activewear.webp",
+      image: "/categories/women/activewear.webp",
       name: "active joggers",
       brand: "Nike",
       price: 320000,
