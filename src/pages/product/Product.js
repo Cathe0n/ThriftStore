@@ -1,55 +1,43 @@
 import React from "react";
 import { useLocation } from "react-router-dom";
+import { useQuery } from "@apollo/client";
+import { GET_PRODUCTS_BY_CATEGORY } from "../../graphql/mutations";
 import ProductCard from "../../components/productcard/ProductCard";
 import "./Product.css";
 
-// Mock data - replace with your actual data source
-const products = [
-  {
-    id: 1,
-    name: "White Collared Shirt",
-    price: 200000,
-    imageUrl: "/images/bottoms.jpg",
-    category: "women",
-    brand: "Brand Name",      // Added for consistency with ProductCard
-    description: "Product description"  // Added for consistency
-  },
-  {
-    id: 2,
-    name: "White Collared Shirt",
-    price: 200000,
-    imageUrl: "/images/bottoms.jpg",
-    category: "kids",
-    brand: "Brand Name",
-    description: "Product description"
-  },
-  // ... other products
-];
 
 function Product() {
   const location = useLocation();
+  const { categoryType } = location.state || {};
+  const { state } = location;
 
-  const getSection = () => {
-    if (location.pathname.includes("women")) return "Women";
-    if (location.pathname.includes("men")) return "Men";
-    if (location.pathname.includes("kids")) return "Kids";
-    return "Everyone";
-  };
+  console.log(state); // Check what's received
 
-  const filteredProducts = products.filter(product => 
-    product.category.toLowerCase() === getSection().toLowerCase()
-  );
+  // Fetch products using Apollo Client
+  const { loading, error, data } = useQuery(GET_PRODUCTS_BY_CATEGORY, {
+    variables: { categoryType },
+    skip: !categoryType // Skip query if categoryType is missing
+  });
 
+  if (loading) return <div className="product-page loading">Loading products...</div>;
+  if (error) return <div className="product-page error">Error loading products: {error.message}</div>;
+  if (!data) return <div className="product-page">No products found.</div>;
+
+  const products = data.getProductbyCategory || [];
+  console.log(products); // Check the fetched products
   return (
     <div className="product-page">
-      <h1 className="product-section-title">{getSection().toUpperCase()}</h1>
+      <h1 className="product-section-title">
+        {location.state?.category?.toUpperCase() || "PRODUCTS"}
+      </h1>
       
+
+      {/* Render product cards */}
       <div className="product-grid">
-        {filteredProducts.map(product => (
+        {products.map(product => (  
           <ProductCard
             key={product.id} 
-            product={product}  // All product data is passed here
-            // onClick removed - handled internally by ProductCard
+            product={product}
           />
         ))}
       </div>
