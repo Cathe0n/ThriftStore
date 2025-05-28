@@ -2,8 +2,11 @@ import React, { useState } from "react";
 import "./Wishlist.css";
 import ProductCard from "../../components/productcard/ProductCard";
 import { FaTimes } from "react-icons/fa";
+import { useAuth } from "../../context/AuthContext";
 
 const Wishlist = () => {
+  const { user } = useAuth();
+
   const [wishlistItems, setWishlistItems] = useState([
     {
       image: "/images/women/dries.jpg",
@@ -40,20 +43,22 @@ const Wishlist = () => {
     <div className="wishlist-page">
       <h2 className="wishlist-title">Your Wishlist</h2>
 
-      {wishlistItems.length === 0 ? (
+      {!user ? (
         <p className="empty-message">
-          Please sign in to your account to see or add to wishlist.
+          Please log in to your account to view your wishlist.
         </p>
+      ) : wishlistItems.length === 0 ? (
+        <p className="empty-message">Your wishlist is currently empty.</p>
       ) : (
         <div className="wishlist-items-container">
           {wishlistItems.map((item, index) => (
             <div className="wishlist-item-wrapper" key={index}>
-            <ProductCard
-            product={item}
-            showAddToCartButton={true}
-            onAddToCart={handleAddToCart}
-            textColor="black"
-            />
+              <ProductCard
+                product={item}
+                showAddToCartButton={true}
+                onAddToCart={handleAddToCart}
+                textColor="black"
+              />
               <button
                 className="remove-button"
                 onClick={() => handleRemoveFromWishlist(index)}

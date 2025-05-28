@@ -1,9 +1,22 @@
-// src/pages/shoppingbag.js
 import React from 'react';
 import './ShoppingBag.css';
 import SelectedItems from '../../components/selecteditems/SelectedItems';
+import { useAuth } from '../../context/AuthContext';
 
 const ShoppingBag = () => {
+  const { user } = useAuth();
+
+  if (!user) {
+    return (
+      <div className="shoppingbag-container">
+        <h2>Shopping Bag</h2>
+        <p className="empty-message">
+          Please log in to view your shopping bag.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="shoppingbag-container">
       <h2>Shopping Bag</h2>
@@ -18,7 +31,7 @@ const ShoppingBag = () => {
         <div className="items-list">
           <SelectedItems />
           <SelectedItems />
-          {/* Add more <SelectedItems /> for demo or dynamically render */}
+          {/* You can render dynamically based on user's bag later */}
         </div>
 
         <div className="payment-summary">

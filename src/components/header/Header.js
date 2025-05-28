@@ -1,13 +1,20 @@
+// src/components/header/Header.js
 import React, { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate, useLocation } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import PopLogin from "../popups/poplogin/PopLogin";
+import PopRegister from "../popups/popregister/PopRegister";
+import PopExit from "../popups/popexit/PopExit";
 import "./Header.css";
 import logo from "../../assets/Vero.png";
-import PopLogin from "../popups/poplogin/PopLogin";
-import PopRegister from "../popups/popregister/PopRegister"; 
 
 function Header() {
+  const { user, logout } = useAuth();
   const [isLoginOpen, setLoginOpen] = useState(false);
   const [isRegisterOpen, setRegisterOpen] = useState(false);
+  const [isExitOpen, setExitOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const openRegister = () => {
     setLoginOpen(false);
@@ -18,6 +25,14 @@ function Header() {
     setRegisterOpen(false);
     setLoginOpen(true);
   };
+
+  const handleLogout = () => {
+    logout();
+    navigate("/women");
+    setExitOpen(false);
+  };
+
+  const isActiveLink = (path) => location.pathname === path && user;
 
   return (
     <>
@@ -56,38 +71,48 @@ function Header() {
         <div className="header-right">
           <NavLink
             to="/wishlist"
-            className={({ isActive }) =>
-              isActive ? "nav-link active-link" : "nav-link"
+            className={() =>
+              isActiveLink("/wishlist") ? "nav-link active-link" : "nav-link"
             }
           >
             WISHLIST
           </NavLink>
           <NavLink
             to="/bag"
-            className={({ isActive }) =>
-              isActive ? "nav-link active-link" : "nav-link"
+            className={() =>
+              isActiveLink("/bag") ? "nav-link active-link" : "nav-link"
             }
           >
             SHOPPING BAG
           </NavLink>
-          <button className="nav-link login-button" onClick={() => setLoginOpen(true)}>
-            LOG IN
-          </button>
+          {user ? (
+            <button className="nav-link exit-button" onClick={() => setExitOpen(true)}>
+              EXIT
+            </button>
+          ) : (
+            <button className="nav-link login-button" onClick={() => setLoginOpen(true)}>
+              LOG IN
+            </button>
+          )}
         </div>
       </header>
 
-      {/* PopLogin Modal Component */}
-      <PopLogin 
-        isOpen={isLoginOpen} 
+      <PopLogin
+        isOpen={isLoginOpen}
         onClose={() => setLoginOpen(false)}
         onSwitchToRegister={openRegister}
       />
-      
-      {/* PopRegister Modal Component */}
+
       <PopRegister
         isOpen={isRegisterOpen}
         onClose={() => setRegisterOpen(false)}
         onSwitchToLogin={openLogin}
+      />
+
+      <PopExit
+        isOpen={isExitOpen}
+        onClose={() => setExitOpen(false)}
+        onConfirm={handleLogout}
       />
     </>
   );

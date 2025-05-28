@@ -12,7 +12,13 @@ const CategoryCard = ({ item, isProduct }) => {
       const categorySlug = item.name.toLowerCase()
                          .replace(/\s+/g, '-')
                          .replace(/[^\w-]+/g, '');
-      navigate(`/product/${categorySlug}`);
+      navigate("/", {
+        state: {
+          categoryType: categorySlug,     
+          category: item.name             
+        }
+      });
+
     }
   };
 

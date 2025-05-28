@@ -99,10 +99,6 @@ function Home() {
     }
   };
 
-  const handleSeeAllCategories = () => {
-    navigate("/categories");
-  };
-
   const handleSeeAllBrands = () => {
     navigate("/brands");
   };
