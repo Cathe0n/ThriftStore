@@ -1,7 +1,9 @@
-import React, { useState } from "react";
-import axios from "axios";
+import React, { useState, useContext } from "react";
 import "../popups.css";
 import { useNavigate } from "react-router-dom";
+import { useMutation } from "@apollo/client";
+import { REGISTER_MUTATION } from "../../../graphql/mutations";
+import { useAuth } from '../../../context/AuthContext';
 
 function PopRegister({ isOpen, onClose, onSwitchToLogin }) {
   const [email, setEmail] = useState("");
@@ -9,11 +11,26 @@ function PopRegister({ isOpen, onClose, onSwitchToLogin }) {
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
+  const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleRegister = async () => {
+  const [register, { loading }] = useMutation(REGISTER_MUTATION, {
+    onCompleted: (data) => {
+      const token = data?.register?.token; // Assuming your registration also returns a token
+      if (token) {
+        login(token); // Automatically log in after registration
+        onClose();
+        navigate("/women");
+      } else {
+        setError("Registration successful but login failed.");
+      }
+    },
+    onError: (err) => {
+      setError(err.message || "Registration failed.");
+    }
+  });
+
+  const handleRegister = () => {
     if (!email || !password) {
       setError("All fields are required.");
       return;
@@ -29,38 +46,7 @@ function PopRegister({ isOpen, onClose, onSwitchToLogin }) {
       return;
     }
 
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const response = await axios.post("http://localhost:8080/public", {
-        query: `
-          mutation Register($email: String!, $password: String!) {
-            register(email: $email, password: $password) {
-              email
-              password
-            }
-          }
-        `,
-        variables: {
-          email,
-          password,
-        },
-      });
-
-      const data = response.data;
-      if (data?.data?.register) {
-        onClose();
-        navigate("/loggedin");
-      } else {
-        const errorMsg = data.errors?.[0]?.message || "Registration failed.";
-        setError(errorMsg);
-      }
-    } catch (err) {
-      setError(err.response?.data?.errors?.[0]?.message || err.message || "Registration failed.");
-    } finally {
-      setIsLoading(false);
-    }
+    register({ variables: { email, password } });
   };
 
   const togglePasswordVisibility = () => {
@@ -117,9 +103,9 @@ function PopRegister({ isOpen, onClose, onSwitchToLogin }) {
         <button
           className="action-button"
           onClick={handleRegister}
-          disabled={isLoading}
+          disabled={loading}
         >
-          {isLoading ? "Registering..." : "REGISTER"}
+          {loading ? "Registering..." : "REGISTER"}
         </button>
 
         <div className="switch-action" onClick={onSwitchToLogin}>

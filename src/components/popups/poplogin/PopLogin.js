@@ -1,56 +1,42 @@
-import React, { useState } from "react";
-import axios from "axios";
+// src/components/popups/poplogin/PopLogin.js
+import React, { useState, useContext } from "react";
 import "./PopLogin.css";
 import { useNavigate } from "react-router-dom";
+import { useMutation } from "@apollo/client";
+import { LOGIN_MUTATION } from "../../../graphql/mutations";
+import { useAuth } from "../../../context/AuthContext";
 
 function PopLogin({ isOpen, onClose, onSwitchToRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [remember, setRemember] = useState(false);
   const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-
+  const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const [loginMutation, { loading }] = useMutation(LOGIN_MUTATION, {
+    onCompleted: (data) => {
+      const token = data?.login?.token;
+      if (token) {
+        console.log(token)
+        login(token);
+        onClose();
+        navigate("/women");
+      } else {
+        setError("Login failed. No token received.");
+      }
+    },
+    onError: (err) => {
+      setError(err.message || "Login failed.");
+    }
+  });
+
+  const handleLogin = () => {
     if (!email || !password) {
       setError("Please enter both email and password.");
       return;
     }
-
-    setIsLoading(true);
-    setError("");
-
-    try {
-      const response = await axios.post("http://localhost:8080/public", {
-        query: `
-          mutation login($email: String!, $password: String!) {
-            login(email: $email, password: $password) {
-              token
-            }
-          }
-        `,
-        variables: {
-          email,
-          password,
-        },
-      });
-
-      const data = response.data;
-
-      if (data?.data?.login?.token) {
-        localStorage.setItem("token", data.data.login.token); // Save the token
-        onClose();
-        navigate("/loggedin");
-      } else {
-        const errorMsg = data.errors?.[0]?.message || "Login failed.";
-        setError(errorMsg);
-      }
-    } catch (err) {
-      setError(err.response?.data?.errors?.[0]?.message || err.message || "Login failed.");
-    } finally {
-      setIsLoading(false);
-    }
+    loginMutation({ variables: { email, password } });
   };
 
   if (!isOpen) return null;
@@ -96,8 +82,8 @@ function PopLogin({ isOpen, onClose, onSwitchToRegister }) {
 
         {error && <p className="error">{error}</p>}
 
-        <button className="login-button" onClick={handleLogin} disabled={isLoading}>
-          {isLoading ? "Logging in..." : "LOGIN"}
+        <button className="login-button" onClick={handleLogin} disabled={loading}>
+          {loading ? "Logging in..." : "LOGIN"}
         </button>
 
         <div className="register-link" onClick={onSwitchToRegister}>

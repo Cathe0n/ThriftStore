@@ -1,19 +1,17 @@
+// src/components/popups/popexit/PopExit.js
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
 import "./PopExit.css";
 
 const PopExit = ({ isOpen, onClose }) => {
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const handleConfirmExit = () => {
-    // Add your logout logic here
-    console.log("User logged out");
+    logout();
     navigate("/women");
     onClose();
-    // In a real app:
-    // 1. Call logout API
-    // 2. Clear auth tokens
-    // 3. Update global state
   };
 
   if (!isOpen) return null;
