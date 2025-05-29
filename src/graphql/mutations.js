@@ -27,3 +27,17 @@ export const GET_PRODUCTS_BY_CATEGORY = gql`
     }
   }
 `;
+
+export const GET_PRODUCT_BY_ID = gql`
+  query GetProductById($id: ID!) {
+    getProductbyId(id: $id) {
+      id
+      product_name
+      price
+      imagePath
+      description
+      category_type
+      stock
+    }
+  }
+`;
