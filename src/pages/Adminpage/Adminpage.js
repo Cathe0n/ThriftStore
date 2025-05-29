@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import { Table, Button, Modal, Form, Input, Select, InputNumber, message, Card } from 'antd';
 import { EditOutlined, PlusOutlined, FilterOutlined, DeleteOutlined } from '@ant-design/icons';
 import AdminHeader from '../../components/header/AdminHeader';
 import './Adminpage.css';
 import { GET_ALL_PRODUCTS } from '../../graphql/adminMutations';
-
+import { ADMIN_CREATE_PRODUCT } from '../../graphql/adminMutations';
 const { Option } = Select;
 
 const AdminPage = () => {
   const { data, loading, error } = useQuery(GET_ALL_PRODUCTS);
+  const [createProduct, { loading: loading_M, error: error_M }] = useMutation(ADMIN_CREATE_PRODUCT, {
+  refetchQueries: ['getAllProducts'], // Refetch your product list query after mutation
+  awaitRefetchQueries: true,
+  });
   const [products, setProducts] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -34,7 +38,12 @@ const AdminPage = () => {
       setProducts(formattedProducts);
     }
   }, [data]);
-
+  useEffect(() => {
+  if (error_M) {
+    console.error("Mutation error:", error_M);
+    message.error(`Failed to add product: ${error_M.message}`);
+  }
+  }, [error_M]);
   const columns = [
     {
       title: 'Category',
@@ -66,7 +75,7 @@ const AdminPage = () => {
       dataIndex: 'price',
       key: 'price',
       width: 100,
-      render: (price) => `$${price.toFixed(2)}`,
+      render: (price) => `$${price.toFixed(0)}`,
     },
     {
       title: 'Discount Rate (%)',
@@ -159,23 +168,38 @@ const AdminPage = () => {
   };
 
   const handleSubmit = () => {
-    form.validateFields().then(values => {
-      const productData = {
-        ...values,
-        key: editingProduct ? editingProduct.key : Date.now().toString(),
-      };
+    form.validateFields().then(async values => {
+      try {
+        if (editingProduct) {
+          // TODO: call update mutation here
+          setProducts(products.map(p => p.key === editingProduct.key ? { ...editingProduct, ...values } : p));
+          message.success('Product updated successfully');
+        } else {
+          console.log("Mutation input values:", values);
+          await createProduct({
+            variables: {
+              product_name: values.product_name,
+              gender: values.gender,
+              price: parseFloat(values.price),
+              discount_rate: parseFloat(values.discount_rate),
+              category_type: values.category_type,
+              imagePath: values.imagePath || '',
+              brand: values.brand,
+              description: values.description
+            }
+          });
 
-      if (editingProduct) {
-        setProducts(products.map(p => p.key === editingProduct.key ? productData : p));
-        message.success('Product updated successfully');
-      } else {
-        setProducts([...products, productData]);
-        message.success('Product added successfully');
+          message.success('Product added successfully');
+        }
+
+        setIsModalVisible(false);
+        form.resetFields();
+      } catch (err) {
+        message.error(`Failed to save product: ${err.message}`);
       }
-
-      setIsModalVisible(false);
     });
   };
+
 
   if (loading) return <p>Loading products...</p>;
   if (error) return <p>Error loading products: {error.message}</p>;
@@ -241,7 +265,7 @@ const AdminPage = () => {
             rules={[{ required: true, message: 'Please select a category' }]}
           >
             <Select placeholder="Select category">
-              <Option value="Ladies">Ladies</Option>
+              <Option value="Women's Tops">Women's Tops</Option>
               <Option value="Men">Men</Option>
               <Option value="Kids">Kids</Option>
               {/* add more if needed */}
@@ -262,9 +286,9 @@ const AdminPage = () => {
             rules={[{ required: true, message: 'Please select gender' }]}
           >
             <Select placeholder="Select gender">
-              <Option value="Female">Female</Option>
-              <Option value="Male">Male</Option>
-              <Option value="Unisex">Unisex</Option>
+              <Option value="female">female</Option>
+              <Option value="male">male</Option>
+              <Option value="unisex">unisex</Option>
             </Select>
           </Form.Item>
 
