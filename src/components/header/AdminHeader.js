@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { PoweroffOutlined, AppstoreOutlined, ShoppingCartOutlined } from '@ant-design/icons';
-import { Button, Avatar, Dropdown, Menu } from 'antd';
+import { PoweroffOutlined, AppstoreOutlined, ShoppingCartOutlined, ExclamationCircleFilled } from '@ant-design/icons';
+import { Button, Avatar, Modal } from 'antd';
 import logo from '../../assets/Vero.png';
 import './AdminHeader.css';
 
@@ -9,35 +9,20 @@ const AdminHeader = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const employeeName = "Admin User";
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  const showLogoutConfirm = () => {
+    setIsLogoutModalOpen(true);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('adminToken');
     navigate('/adminloginpage');
   };
 
-  const handleMenuClick = ({ key }) => {
-    navigate(key);
+  const handleCancel = () => {
+    setIsLogoutModalOpen(false);
   };
-
-  const menu = (
-    <Menu>
-      <Menu.Item key="/adminprofile">
-        My Profile
-      </Menu.Item>
-      <Menu.Item key="/adminsettings">
-        Settings
-      </Menu.Item>
-      <Menu.Divider />
-      <Menu.Item 
-        key="logout" 
-        icon={<PoweroffOutlined />}
-        onClick={handleLogout}
-        danger
-      >
-        Log Out
-      </Menu.Item>
-    </Menu>
-  );
 
   return (
     <header className="admin-header">
@@ -66,24 +51,39 @@ const AdminHeader = () => {
         </div>
 
         <div className="admin-header-user">
-          <Dropdown overlay={menu} placement="bottomRight">
-            <div className="admin-user-dropdown">
-              <Avatar 
-                style={{ backgroundColor: '#f56a00', marginRight: '10px' }}
-              >
-                {employeeName.charAt(0)}
-              </Avatar>
-              <span className="admin-user-name">{employeeName}</span>
-            </div>
-          </Dropdown>
+          <div className="admin-user-dropdown">
+            <Avatar 
+              style={{ backgroundColor: '#f56a00', marginRight: '10px' }}
+            >
+              {employeeName.charAt(0)}
+            </Avatar>
+            <span className="admin-user-name">{employeeName}</span>
+          </div>
           <Button 
             type="text" 
             icon={<PoweroffOutlined />} 
-            onClick={handleLogout}
+            onClick={showLogoutConfirm}
             className="admin-logout-btn"
           />
         </div>
       </div>
+
+      <Modal
+        title={
+          <>
+            <ExclamationCircleFilled style={{ color: '#faad14', marginRight: '8px' }} />
+            Confirm Logout
+          </>
+        }
+        open={isLogoutModalOpen}
+        onOk={handleLogout}
+        onCancel={handleCancel}
+        okText="Logout"
+        cancelText="Cancel"
+        centered
+      >
+        <p>Are you sure you want to logout from the admin panel?</p>
+      </Modal>
     </header>
   );
 };
