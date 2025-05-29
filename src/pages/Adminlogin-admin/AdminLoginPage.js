@@ -1,5 +1,8 @@
 import React, { useState } from "react";
-import "./Adminlogin-admin.css"; 
+import { useMutation } from "@apollo/client";
+import "./Adminlogin-admin.css";
+import { useNavigate } from "react-router-dom";
+import { ADMIN_LOGIN_MUTATION } from "../../graphql/adminMutations";
 
 export const AdminLoginPage = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -7,23 +10,43 @@ export const AdminLoginPage = () => {
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [employeeName, setEmployeeName] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
-  const handleLogin = (e) => {
+  const navigate = useNavigate();
+  const [loginAdmin, { loading }] = useMutation(ADMIN_LOGIN_MUTATION);
+
+  const handleLogin = async (e) => {
     e.preventDefault();
-    
-    if (email && password) {
-      setIsLoggedIn(true);
-      setEmployeeName("Admin User");
-      
-      if (rememberMe) {
-        localStorage.setItem("rememberedEmail", email);
+
+    try {
+      const { data } = await loginAdmin({
+        variables: { email, password },
+      });
+
+      if (data?.login_A?.token) {
+        setIsLoggedIn(true);
+        setEmployeeName("Admin User");
+
+        if (rememberMe) {
+          localStorage.setItem("rememberedEmail", email);
+        }
+
+        localStorage.setItem("adminToken", data.login_A.token);
+        console.log(data.login_A.token)
+        navigate("/adminpage");
+      } else {
+        setErrorMessage("Invalid response from server.");
       }
+    } catch (error) {
+      console.error("Login failed:", error);
+      setErrorMessage("Invalid email or password.");
     }
   };
 
   const handleLogout = () => {
     setIsLoggedIn(false);
     setEmployeeName("");
+    localStorage.removeItem("adminToken");
   };
 
   if (isLoggedIn) {
@@ -31,7 +54,12 @@ export const AdminLoginPage = () => {
       <div className="dashboard-container">
         <div className="dashboard-content">
           <h1 className="dashboard-title">Welcome to your Dashboard</h1>
-          <p className="dashboard-subtitle">You are now logged in as {employeeName}.</p>
+          <p className="dashboard-subtitle">
+            You are now logged in as {employeeName}.
+          </p>
+          <button className="Adminlogin-button" onClick={handleLogout}>
+            LOGOUT
+          </button>
         </div>
       </div>
     );
@@ -46,7 +74,7 @@ export const AdminLoginPage = () => {
             Please input your credentials below, for further information you may contact the IT team.
           </p>
         </div>
-        
+
         <form className="login-form" onSubmit={handleLogin}>
           <div className="input-group">
             <label htmlFor="email" className="input-label">Email</label>
@@ -60,7 +88,7 @@ export const AdminLoginPage = () => {
               required
             />
           </div>
-          
+
           <div className="input-group">
             <label htmlFor="password" className="input-label">Password</label>
             <input
@@ -73,7 +101,7 @@ export const AdminLoginPage = () => {
               required
             />
           </div>
-          
+
           <div className="remember-me-group">
             <input
               type="checkbox"
@@ -84,9 +112,10 @@ export const AdminLoginPage = () => {
             />
             <label htmlFor="remember" className="remember-label">Remember me</label>
           </div>
-          
-          <button type="submit" className="Adminlogin-button">
-            LOGIN
+
+          {errorMessage && <p className="error-message">{errorMessage}</p>}
+          <button type="submit" className="Adminlogin-button" disabled={loading}>
+            {loading ? "Logging in..." : "LOGIN"}
           </button>
         </form>
       </div>
