@@ -1,4 +1,3 @@
-/* src/components/ProductDisplay/ProductDisplay.css */
 .product-display {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
@@ -6,16 +5,14 @@
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
   background: white;
-}
-
-.product-display:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  height: 420px; /* fixed height for uniform cards */
+  display: flex;
+  flex-direction: column;
 }
 
 .product-image-container {
   width: 100%;
-  height: 200px;
+  height: 300px; /* less height to allow more image */
   overflow: hidden;
 }
 
@@ -31,12 +28,16 @@
 }
 
 .product-details {
-  padding: 16px;
+  padding: 8px 12px;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .product-name {
-  font-size: 16px;
-  margin: 0 0 8px 0;
+  font-size: 12px; /* smaller font */
+  margin: 0 0 4px 0;
   color: #333;
   font-weight: 500;
   white-space: nowrap;
@@ -45,8 +46,8 @@
 }
 
 .product-price {
-  font-size: 16px;
+  font-size: 14px;
   margin: 0;
-  color: #e53935;
+  color: #000000;
   font-weight: bold;
 }

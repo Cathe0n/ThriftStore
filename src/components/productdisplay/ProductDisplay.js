@@ -1,9 +1,10 @@
-// src/components/ProductDisplay/ProductDisplay.js
 import React from 'react';
-import './ProductDisplay.css'; // Create this CSS file for styling
+import './ProductDisplay.css';
+import { useNavigate } from 'react-router-dom';
 
 const ProductDisplay = ({ product }) => {
-  // Destructure with fallback values
+  const navigate = useNavigate();
+
   const {
     imagePath = '',
     product_name = 'Product Name Not Available',
@@ -11,7 +12,6 @@ const ProductDisplay = ({ product }) => {
     id = ''
   } = product || {};
 
-  // Format price to Indonesian Rupiah
   const formatPrice = (amount) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -20,8 +20,12 @@ const ProductDisplay = ({ product }) => {
     }).format(amount);
   };
 
+  const handleClick = () => {
+    navigate(`/productinformation/${id}`);
+  };
+
   return (
-    <div className="product-display" key={id}>
+    <div className="product-display" key={id} onClick={handleClick}>
       <div className="product-image-container">
         <img 
           src={imagePath || '/images/placeholder.jpg'} 
