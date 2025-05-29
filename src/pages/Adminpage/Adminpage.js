@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Table, Button, Modal, Form, Input, Select, message, Card } from 'antd';
 import { EditOutlined, PlusOutlined, FilterOutlined, DeleteOutlined } from '@ant-design/icons';
+import AdminHeader from '../../components/header/AdminHeader'; // <-- Added import
 import './Adminpage.css';
 
 const { Option } = Select;
@@ -164,6 +165,8 @@ const AdminPage = () => {
 
   return (
     <div className="admin-dashboard-container">
+      <AdminHeader /> {/* <-- Added AdminHeader component */}
+
       <div className="dashboard-content">
         <Card className="dashboard-header-card">
           <div className="dashboard-header">
