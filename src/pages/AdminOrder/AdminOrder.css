@@ -268,3 +268,35 @@
     margin: 16px auto;
   }
 }
+
+/* Filter Modal Styles */
+.filter-modal .ant-modal-body {
+  padding: 16px 24px;
+}
+
+.filter-modal .ant-divider {
+  margin: 12px 0;
+}
+
+.filter-modal .ant-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  margin: 8px 0;
+}
+
+.filter-modal .ant-tag {
+  margin-left: 8px;
+}
+
+.filter-badge {
+  display: inline-block;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 12px;
+  line-height: 16px;
+  border-radius: 8px;
+  background-color: #1890ff;
+  color: #fff;
+  margin-left: 8px;
+}

@@ -1,22 +1,9 @@
 import React, { useState } from 'react';
-import {
-  Table,
-  Tag,
-  Button,
-  Modal,
-  Card,
-  Typography,
-  Badge,
-  message,
-} from 'antd';
-import {
-  SearchOutlined,
-  FilterOutlined,
-  EyeOutlined,
-  SyncOutlined,
-} from '@ant-design/icons';
-import './AdminOrder.css'; // Reusing the same styles
+import { Table, Tag, Button, Modal, Card, Typography, Badge, message } from 'antd';
+import { FilterOutlined, EyeOutlined, SyncOutlined } from '@ant-design/icons';
+import './AdminOrder.css'; 
 import AdminHeader from '../../components/header/AdminHeader';
+import OrderFilter from './OrderFilter';
 
 const { Title, Text } = Typography;
 
@@ -28,7 +15,7 @@ const AdminOrder = () => {
       customer: 'John Doe',
       date: '2023-10-15',
       items: 3,
-      total: 42.99,
+      total: 4299000, // Rp 4,299,000
       status: 'Processing',
       address: '123 Main St, New York, NY',
     },
@@ -38,7 +25,7 @@ const AdminOrder = () => {
       customer: 'Jane Smith',
       date: '2023-10-16',
       items: 5,
-      total: 87.5,
+      total: 8750000, // Rp 8,750,000
       status: 'Shipped',
       address: '456 Park Ave, Boston, MA',
     },
@@ -48,7 +35,7 @@ const AdminOrder = () => {
       customer: 'Robert Johnson',
       date: '2023-10-17',
       items: 2,
-      total: 24.99,
+      total: 2499000, // Rp 2,499,000
       status: 'Delivered',
       address: '789 Oak St, Chicago, IL',
     },
@@ -58,12 +45,13 @@ const AdminOrder = () => {
       customer: 'Emily Davis',
       date: '2023-10-18',
       items: 4,
-      total: 65.75,
+      total: 6575000, // Rp 6,575,000
       status: 'Pending',
       address: '321 Pine Rd, Seattle, WA',
     },
   ]);
 
+  const [filteredOrders, setFilteredOrders] = useState(orders);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
@@ -73,6 +61,15 @@ const AdminOrder = () => {
     Delivered: 'green',
     Pending: 'orange',
     Cancelled: 'red',
+  };
+
+  const handleFilterChange = (selectedStatuses) => {
+    if (selectedStatuses.length === 0) {
+      setFilteredOrders(orders);
+    } else {
+      const filtered = orders.filter(order => selectedStatuses.includes(order.status));
+      setFilteredOrders(filtered);
+    }
   };
 
   const columns = [
@@ -107,7 +104,7 @@ const AdminOrder = () => {
       dataIndex: 'total',
       key: 'total',
       width: 120,
-      render: (total) => `$${total.toFixed(2)}`,
+      render: (total) => `Rp ${total.toLocaleString('id-ID')}`,
     },
     {
       title: 'Status',
@@ -154,7 +151,6 @@ const AdminOrder = () => {
 
   return (
     <div className="admin-dashboard-container">
-      {/* Admin header at the top */}
       <AdminHeader />
 
       <div className="dashboard-content">
@@ -172,18 +168,7 @@ const AdminOrder = () => {
               >
                 Refresh Orders
               </Button>
-              <Button
-                icon={<FilterOutlined />}
-                size="large"
-              >
-                Filters
-              </Button>
-              <Button
-                icon={<SearchOutlined />}
-                size="large"
-              >
-                Search
-              </Button>
+              <OrderFilter onFilterChange={handleFilterChange} />
             </div>
           </div>
         </Card>
@@ -193,21 +178,16 @@ const AdminOrder = () => {
             <h2 className="section-title">
               <span>Ongoing Orders</span>
               <Badge
-                count={orders.length}
+                count={filteredOrders.length}
                 style={{ backgroundColor: '#1890ff' }}
               />
             </h2>
-            <div className="status-filter">
-              <Tag color="blue">Processing (2)</Tag>
-              <Tag color="geekblue">Shipped (1)</Tag>
-              <Tag color="orange">Pending (1)</Tag>
-            </div>
           </div>
           <div className="products-table-container">
             <Table
               className="orders-table"
               columns={columns}
-              dataSource={orders}
+              dataSource={filteredOrders}
               scroll={{ x: 1000, y: 'calc(100vh - 350px)' }}
               pagination={{ pageSize: 10 }}
               bordered
@@ -261,31 +241,31 @@ const AdminOrder = () => {
               <Title level={4} className="section-title">Order Items</Title>
               <Table
                 dataSource={[
-                  { id: 1, product: 'Cotton T-Shirt', size: 'M', price: 14.99, quantity: 2, total: 29.98 },
-                  { id: 2, product: 'Classic Jeans', size: '32', price: 29.99, quantity: 1, total: 29.99 },
+                  { id: 1, product: 'Cotton T-Shirt', size: 'M', price: 149900, quantity: 2, total: 299800 },
+                  { id: 2, product: 'Classic Jeans', size: '32', price: 299900, quantity: 1, total: 299900 },
                 ]}
                 pagination={false}
               >
                 <Table.Column title="Product" dataIndex="product" key="product" />
                 <Table.Column title="Size" dataIndex="size" key="size" />
-                <Table.Column title="Price" dataIndex="price" key="price" render={price => `$${price}`} />
+                <Table.Column title="Price" dataIndex="price" key="price" render={price => `Rp ${price.toLocaleString('id-ID')}`} />
                 <Table.Column title="Qty" dataIndex="quantity" key="quantity" />
-                <Table.Column title="Total" dataIndex="total" key="total" render={total => `$${total}`} />
+                <Table.Column title="Total" dataIndex="total" key="total" render={total => `Rp ${total.toLocaleString('id-ID')}`} />
               </Table>
             </div>
 
             <div className="order-totals">
               <div className="total-row">
                 <Text>Subtotal:</Text>
-                <Text>$59.97</Text>
+                <Text>Rp 220.000</Text>
               </div>
               <div className="total-row">
                 <Text>Shipping:</Text>
-                <Text>$5.99</Text>
+                <Text>Rp 125.000</Text>
               </div>
               <div className="total-row">
                 <Text strong>Grand Total:</Text>
-                <Text strong>${selectedOrder.total}</Text>
+                <Text strong>{`Rp ${selectedOrder.total.toLocaleString('id-ID')}`}</Text>
               </div>
             </div>
           </div>
