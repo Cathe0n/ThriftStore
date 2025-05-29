@@ -13,6 +13,7 @@ import Product from "./pages/product/Product";
 import ProductInformation from "./pages/productinformation/ProductInformation";
 import { AdminLoginPage } from "./pages/Adminlogin-admin/AdminLoginPage";
 import AdminPage from './pages/Adminpage/Adminpage.js';
+import AdminOrder from './pages/AdminOrder/AdminOrder.js';
 import PrivateRoute from "./PrivateRoute";
 import ShoppingBag from "./pages/shoppingbag/ShoppingBag.js"; 
 import Wishlist from "./pages/wishlist/Wishlist";
@@ -47,6 +48,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/adminloginpage" element={<AdminLoginPage />} />
             <Route path="/adminpage" element={<AdminPage />} />
+            <Route path="/adminorder" element={<AdminOrder />} />
             <Route path="/bag" element={<ShoppingBag />} />
             <Route path="/wishlist" element={<Wishlist />} />
           </Routes>
