@@ -16,21 +16,23 @@ const { Option } = Select;
 const AdminPage = () => {
   const { data, loading, error } = useQuery(GET_ALL_PRODUCTS);
   const [createProduct, { loading: loadingCreate }] = useMutation(ADMIN_CREATE_PRODUCT, {
-    refetchQueries: ['getAllProducts'],
+    refetchQueries: [{ query: GET_ALL_PRODUCTS }],
     awaitRefetchQueries: true,
   });
   const [updateProduct, { loading: loadingUpdate }] = useMutation(ADMIN_UPDATE_PRODUCT, {
-    refetchQueries: ['getAllProducts'],
+    refetchQueries: [{ query: GET_ALL_PRODUCTS }],
     awaitRefetchQueries: true,
   });
   const [deleteProduct, { loading: loadingDelete }] = useMutation(ADMIN_DELETE_PRODUCT, {
-    refetchQueries: ['getAllProducts'],
+    refetchQueries: [{ query: GET_ALL_PRODUCTS }],
     awaitRefetchQueries: true,
   });
   
   const [products, setProducts] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -165,22 +167,8 @@ const AdminPage = () => {
 
  
   const handleDelete = (product_id) => {
-    Modal.confirm({
-      title: 'Confirm Delete',
-      content: 'Are you sure you want to delete this product? This action cannot be undone.',
-      okText: 'Delete',
-      okType: 'danger',
-      cancelText: 'Cancel',
-      onOk: async () => {
-        try {
-          await deleteProduct({ variables: { product_id } });
-          message.success('Product deleted successfully');
-        } catch (err) {
-          message.error(`Failed to delete product: ${err.message}`);
-        }
-      },
-    });
-    setIsModalVisible(true);
+    setProductToDelete(product_id);
+    setIsDeleteModalVisible(true);
   };
 
   const handleSubmit = () => {
@@ -274,7 +262,30 @@ const AdminPage = () => {
           </div>
         </Card>
       </div>
-
+      <Modal
+        title="Confirm Delete"
+        visible={isDeleteModalVisible}
+        onOk={async () => {
+          try {
+            await deleteProduct({ variables: { product_id: productToDelete } });
+            message.success('Product deleted successfully');
+          } catch (err) {
+            message.error(`Failed to delete product: ${err.message}`);
+          } finally {
+            setIsDeleteModalVisible(false);
+          }
+        }}
+        onCancel={() => setIsDeleteModalVisible(false)}
+          okType="danger"
+          okText="Delete"
+          cancelText="Cancel"
+          okButtonProps={{
+            danger: true,
+            type: 'primary', // This makes it a red filled button instead of just red text
+          }}
+        >
+        <p>Are you sure you want to delete this product? This action cannot be undone.</p>
+      </Modal>
       <Modal
         title={editingProduct ? "Edit Product" : "Add New Product"}
         visible={isModalVisible}
