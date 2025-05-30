@@ -285,8 +285,26 @@ const AdminPage = () => {
           >
             <Select placeholder="Select category">
               <Option value="Women's Tops">Women's Tops</Option>
-              <Option value="Men">Men</Option>
-              <Option value="Kids">Kids</Option>
+              <Option value="Women's Sweaters & Hoodies">Women's Sweaters & Hoodiess</Option>
+              <Option value="Women's Bottoms">Women's Bottoms</Option>
+              <Option value="Women's Activewear">Women's Activewear</Option>
+              <Option value="Women's Dresses & Skirts">Women's Dresses & Skirts</Option>
+              <Option value="Women's Outerwear">Women's Outerwear</Option>
+
+              <Option value="Men's Tops">Men's Tops</Option>
+              <Option value="Men's Sweaters & Hoodiess">Men's Sweaters & Hoodiess</Option>
+              <Option value="Men's Bottoms">Men's Bottoms</Option>
+              <Option value="Men's Activewear">Men's Activewear</Option>
+              <Option value="Men's Outerwear">Men's Outerwear</Option>
+              <Option value="Men's Loungewear">Men's Loungewear</Option>
+              
+              <Option value="Kids Tops">Kids Tops</Option>
+              <Option value="Kids Sweaters & Hoodies">Kids Sweaters & Hoodiess</Option>
+              <Option value="Kids Bottoms">Kids Bottoms</Option>
+              <Option value="Kids Activewear">Kids Activewear</Option>
+              <Option value="Kids Outerwear">Kids Outerwear</Option>
+              <Option value="Kids Loungewear & Pajamas">Kids Loungewear</Option>
+          
               {/* add more if needed */}
             </Select>
           </Form.Item>
