@@ -7,6 +7,8 @@ import './Adminpage.css';
 import { ADMIN_LOGIN_MUTATION, GET_ALL_PRODUCTS } from '../../graphql/adminMutations';
 import { ADMIN_CREATE_PRODUCT } from '../../graphql/adminMutations';
 import { ADMIN_UPDATE_PRODUCT } from '../../graphql/adminMutations';
+import { ADMIN_DELETE_PRODUCT } from '../../graphql/adminMutations';
+
 const { Option } = Select;
 
 const AdminPage = () => {
@@ -159,17 +161,28 @@ const AdminPage = () => {
     setIsModalVisible(true);
   };
 
+  const [deleteProduct] = useMutation(ADMIN_DELETE_PRODUCT, {
+  refetchQueries: ['getAllProducts'],
+  awaitRefetchQueries: true,
+});
+
+
 const handleDelete = (product_id) => {
-  console.log('handleDelete called with', product_id); // Debug
   Modal.confirm({
     title: 'Confirm Delete',
     content: 'Are you sure you want to delete this product?',
     okText: 'Delete',
     okType: 'danger',
     cancelText: 'Cancel',
-    onOk() {
-      setProducts(prev => prev.filter(item => String(item.key) !== String(product_id)));
-      message.success('Product deleted successfully');
+    onOk: async () => {
+      try {
+        await deleteProduct({ 
+          variables: { product_id } 
+        });
+        message.success('Product deleted successfully');
+      } catch (err) {
+        message.error(`Failed to delete product: ${err.message}`);
+      }
     },
   });
 };
