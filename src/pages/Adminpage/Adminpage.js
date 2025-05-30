@@ -82,11 +82,11 @@ const AdminPage = () => {
       width: 120,
     },
     {
-      title: 'Price ($)',
+      title: 'Price (IDR)',
       dataIndex: 'price',
       key: 'price',
       width: 100,
-      render: (price) => `$${price.toFixed(0)}`,
+      render: (price) => `${price.toFixed(0)}`,
     },
     {
       title: 'Discount Rate (%)',
@@ -304,21 +304,21 @@ const AdminPage = () => {
           >
             <Select placeholder="Select category">
               <Option value="Women's Tops">Women's Tops</Option>
-              <Option value="Women's Sweaters & Hoodies">Women's Sweaters & Hoodiess</Option>
+              <Option value="Women's Sweaters & Hoodies">Women's Sweaters & Hoodies</Option>
               <Option value="Women's Bottoms">Women's Bottoms</Option>
               <Option value="Women's Activewear">Women's Activewear</Option>
               <Option value="Women's Dresses & Skirts">Women's Dresses & Skirts</Option>
               <Option value="Women's Outerwear">Women's Outerwear</Option>
 
               <Option value="Men's Tops">Men's Tops</Option>
-              <Option value="Men's Sweaters & Hoodiess">Men's Sweaters & Hoodiess</Option>
+              <Option value="Men's Sweaters & Hoodies">Men's Sweaters & Hoodies</Option>
               <Option value="Men's Bottoms">Men's Bottoms</Option>
               <Option value="Men's Activewear">Men's Activewear</Option>
               <Option value="Men's Outerwear">Men's Outerwear</Option>
               <Option value="Men's Loungewear">Men's Loungewear</Option>
               
               <Option value="Kids Tops">Kids Tops</Option>
-              <Option value="Kids Sweaters & Hoodies">Kids Sweaters & Hoodiess</Option>
+              <Option value="Kids Sweaters & Hoodies">Kids Sweaters & Hoodies</Option>
               <Option value="Kids Bottoms">Kids Bottoms</Option>
               <Option value="Kids Activewear">Kids Activewear</Option>
               <Option value="Kids Outerwear">Kids Outerwear</Option>
@@ -343,6 +343,7 @@ const AdminPage = () => {
               <Option value="female">female</Option>
               <Option value="male">male</Option>
               <Option value="unisex">unisex</Option>
+              <Option value="kids">kids</Option>
             </Select>
           </Form.Item>
 
