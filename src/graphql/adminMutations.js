@@ -42,10 +42,10 @@ export const ADMIN_UPDATE_PRODUCT = gql `
 // export const ADMIN_UPDATE_PRODUCT = gql `
 
 // `;
-// // delete product
-// export const ADMIN_DELETE_PRODUCT = gql `
-
-// `;
+// delete product
+export const ADMIN_DELETE_PRODUCT = gql `
+  mutation deleteProduct($product_id: String!) { deleteProduct(product_id: $product_id)}
+`;
 // // adds stock to existing size
 // export const ADMIN_UPDATE_SIZESTOCK_PRODUCT = gql `
 
