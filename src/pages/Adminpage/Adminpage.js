@@ -9,18 +9,25 @@ import { ADMIN_CREATE_PRODUCT } from '../../graphql/adminMutations';
 import { ADMIN_UPDATE_PRODUCT } from '../../graphql/adminMutations';
 import { ADMIN_DELETE_PRODUCT } from '../../graphql/adminMutations';
 
+
+
 const { Option } = Select;
 
 const AdminPage = () => {
   const { data, loading, error } = useQuery(GET_ALL_PRODUCTS);
-  const [createProduct, { loading: loading_M, error: error_M }] = useMutation(ADMIN_CREATE_PRODUCT, {
-  refetchQueries: ['getAllProducts'], // Refetch your product list query after mutation
-  awaitRefetchQueries: true,
+  const [createProduct, { loading: loadingCreate }] = useMutation(ADMIN_CREATE_PRODUCT, {
+    refetchQueries: ['getAllProducts'],
+    awaitRefetchQueries: true,
   });
-  const [updateProduct,{ loading: loading_M2, error: error_M2}] = useMutation(ADMIN_UPDATE_PRODUCT, {
-  refetchQueries: ['getAllProducts'],
-  awaitRefetchQueries: true,
-  })
+  const [updateProduct, { loading: loadingUpdate }] = useMutation(ADMIN_UPDATE_PRODUCT, {
+    refetchQueries: ['getAllProducts'],
+    awaitRefetchQueries: true,
+  });
+  const [deleteProduct, { loading: loadingDelete }] = useMutation(ADMIN_DELETE_PRODUCT, {
+    refetchQueries: ['getAllProducts'],
+    awaitRefetchQueries: true,
+  });
+  
   const [products, setProducts] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -28,7 +35,6 @@ const AdminPage = () => {
 
   useEffect(() => {
     if (data?.getAllProducts) {
-      // Map GraphQL products to table format
       const formattedProducts = data.getAllProducts.map((p, index) => ({
         key: p.id,
         product_id: p.id,
@@ -46,12 +52,7 @@ const AdminPage = () => {
       setProducts(formattedProducts);
     }
   }, [data]);
-  useEffect(() => {
-  if (error_M) {
-    console.error("Mutation error:", error_M);
-    message.error(`Failed to add product: ${error_M.message}`);
-  }
-  }, [error_M]);
+
   const columns = [
     {
       title: 'Category',
@@ -129,7 +130,8 @@ const AdminPage = () => {
             type="link" 
             icon={<DeleteOutlined />} 
             danger
-            onClick={() => handleDelete(record.product_id)}
+            onClick={() => handleDelete(record)}
+            loading={loadingDelete}
           >
             Delete
           </Button>
@@ -161,34 +163,31 @@ const AdminPage = () => {
     setIsModalVisible(true);
   };
 
-  const [deleteProduct] = useMutation(ADMIN_DELETE_PRODUCT, {
-  refetchQueries: ['getAllProducts'],
-  awaitRefetchQueries: true,
-});
-
-
-const handleDelete = (product_id) => {
-  Modal.confirm({
-    title: 'Confirm Delete',
-    content: 'Are you sure you want to delete this product?',
-    okText: 'Delete',
-    okType: 'danger',
-    cancelText: 'Cancel',
-    onOk() {
-      console.log('Delete confirmed for product ID:', product_id);
-      message.success('Delete functionality would execute here');
-    },
-    onCancel() {
-      console.log('Delete cancelled');
-    },
-  });
-};
+ 
+  const handleDelete = (product) => {
+  const product_id = product.product_id 
+    console.log(product_id)
+    Modal.confirm({
+      title: 'Confirm Delete',
+      content: 'Are you sure you want to delete this product? This action cannot be undone.',
+      okText: 'Delete',
+      okType: 'danger',
+      cancelText: 'Cancel',
+      onOk: async () => {
+        try {
+          await deleteProduct({ variables: { product_id } });
+          message.success('Product deleted successfully');
+        } catch (err) {
+          message.error(`Failed to delete product: ${err.message}`);
+        }
+      },
+    });
+  };
 
   const handleSubmit = () => {
     form.validateFields().then(async values => {
       try {
         if (editingProduct) {
-          console.log("Mutation input values:", values);
           await updateProduct({
             variables: {
               product_id: editingProduct.product_id,
@@ -201,11 +200,9 @@ const handleDelete = (product_id) => {
               brand: values.brand,
               description: values.description
             }
-          })
-          setProducts(products.map(p => p.product_id === editingProduct.product_id ? { ...editingProduct, ...values } : p));
+          });
           message.success('Product updated successfully');
         } else {
-          console.log("Mutation input values:", values);
           await createProduct({
             variables: {
               product_name: values.product_name,
@@ -218,7 +215,6 @@ const handleDelete = (product_id) => {
               description: values.description
             }
           });
-
           message.success('Product added successfully');
         }
 
@@ -229,7 +225,6 @@ const handleDelete = (product_id) => {
       }
     });
   };
-
 
   if (loading) return <p>Loading products...</p>;
   if (error) return <p>Error loading products: {error.message}</p>;
@@ -248,6 +243,7 @@ const handleDelete = (product_id) => {
                 icon={<PlusOutlined />} 
                 onClick={handleAdd}
                 size="large"
+                loading={loadingCreate}
               >
                 Add Product
               </Button>
@@ -274,6 +270,7 @@ const handleDelete = (product_id) => {
               scroll={{ x: 1300, y: 'calc(100vh - 350px)' }}
               pagination={false}
               bordered
+              loading={loading || loadingDelete}
             />
           </div>
         </Card>
@@ -287,6 +284,7 @@ const handleDelete = (product_id) => {
         width={800}
         okText={editingProduct ? "Update" : "Create"}
         cancelText="Cancel"
+        confirmLoading={loadingCreate || loadingUpdate}
       >
         <Form form={form} layout="vertical">
           <Form.Item 
@@ -298,7 +296,6 @@ const handleDelete = (product_id) => {
               <Option value="Women's Tops">Women's Tops</Option>
               <Option value="Men">Men</Option>
               <Option value="Kids">Kids</Option>
-              {/* add more if needed */}
             </Select>
           </Form.Item>
 
