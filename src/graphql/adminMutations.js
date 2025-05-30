@@ -26,8 +26,8 @@ export const GET_ALL_PRODUCTS = gql`
 `;
 // add new product
 export const ADMIN_CREATE_PRODUCT = gql`
-  mutation createProduct($product_name: String!,$gender:String!,$price:Float!,$discount_rate:Float!,$category_type:String!,$imagePath:String!,$brand:String!) 
-  { createProduct(product_name:$product_name,gender:$gender,price:$price,discount_rate:$discount_rate,category_type:$category_type,imagePath:$imagePath,brand:$brand) 
+  mutation createProduct($product_name: String!,$gender:String!,$price:Float!,$discount_rate:Float!,$category_type:String!,$imagePath:String!,$brand:String!,$description:String!) 
+  { createProduct(product_name:$product_name,gender:$gender,price:$price,discount_rate:$discount_rate,category_type:$category_type,imagePath:$imagePath,brand:$brand,description:$description) 
   { product_name category_type } }
 `;
 // // update product name and discount rate

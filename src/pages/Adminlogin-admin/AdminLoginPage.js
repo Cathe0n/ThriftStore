@@ -46,7 +46,7 @@ export const AdminLoginPage = () => {
   const handleLogout = () => {
     setIsLoggedIn(false);
     setEmployeeName("");
-    localStorage.removeItem("adminToken");
+    localStorage.removeItem("token");
   };
 
   if (isLoggedIn) {
