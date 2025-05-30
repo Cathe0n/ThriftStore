@@ -9,6 +9,8 @@ import { ADMIN_CREATE_PRODUCT } from '../../graphql/adminMutations';
 import { ADMIN_UPDATE_PRODUCT } from '../../graphql/adminMutations';
 import { ADMIN_DELETE_PRODUCT } from '../../graphql/adminMutations';
 
+
+
 const { Option } = Select;
 
 const AdminPage = () => {
@@ -161,7 +163,7 @@ const AdminPage = () => {
     setIsModalVisible(true);
   };
 
-  // Updated delete function with mutation
+ 
   const handleDelete = (product_id) => {
     Modal.confirm({
       title: 'Confirm Delete',
@@ -178,6 +180,7 @@ const AdminPage = () => {
         }
       },
     });
+    setIsModalVisible(true);
   };
 
   const handleSubmit = () => {
