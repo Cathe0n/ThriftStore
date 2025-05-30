@@ -4,8 +4,9 @@ import { Table, Button, Modal, Form, Input, Select, InputNumber, message, Card }
 import { EditOutlined, PlusOutlined, FilterOutlined, DeleteOutlined } from '@ant-design/icons';
 import AdminHeader from '../../components/header/AdminHeader';
 import './Adminpage.css';
-import { GET_ALL_PRODUCTS } from '../../graphql/adminMutations';
+import { ADMIN_LOGIN_MUTATION, GET_ALL_PRODUCTS } from '../../graphql/adminMutations';
 import { ADMIN_CREATE_PRODUCT } from '../../graphql/adminMutations';
+import { ADMIN_UPDATE_PRODUCT } from '../../graphql/adminMutations';
 const { Option } = Select;
 
 const AdminPage = () => {
@@ -14,6 +15,10 @@ const AdminPage = () => {
   refetchQueries: ['getAllProducts'], // Refetch your product list query after mutation
   awaitRefetchQueries: true,
   });
+  const [updateProduct,{ loading: loading_M2, error: error_M2}] = useMutation(ADMIN_UPDATE_PRODUCT, {
+  refetchQueries: ['getAllProducts'],
+  awaitRefetchQueries: true,
+  })
   const [products, setProducts] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
@@ -23,7 +28,8 @@ const AdminPage = () => {
     if (data?.getAllProducts) {
       // Map GraphQL products to table format
       const formattedProducts = data.getAllProducts.map((p, index) => ({
-        key: index.toString(),
+        key: p.id,
+        product_id: p.id,
         product_name: p.product_name,
         gender: p.gender,
         price: p.price,
@@ -121,7 +127,7 @@ const AdminPage = () => {
             type="link" 
             icon={<DeleteOutlined />} 
             danger
-            onClick={() => handleDelete(record.key)}
+            onClick={() => handleDelete(record.product_id)}
           >
             Delete
           </Button>
@@ -153,7 +159,7 @@ const AdminPage = () => {
     setIsModalVisible(true);
   };
 
-  const handleDelete = (key) => {
+  const handleDelete = (product_id) => {
     Modal.confirm({
       title: 'Confirm Delete',
       content: 'Are you sure you want to delete this product?',
@@ -161,7 +167,7 @@ const AdminPage = () => {
       okType: 'danger',
       cancelText: 'Cancel',
       onOk() {
-        setProducts(products.filter(item => item.key !== key));
+        setProducts(products.filter(item => item.key !== product_id));
         message.success('Product deleted successfully');
       },
     });
@@ -171,8 +177,21 @@ const AdminPage = () => {
     form.validateFields().then(async values => {
       try {
         if (editingProduct) {
-          // TODO: call update mutation here
-          setProducts(products.map(p => p.key === editingProduct.key ? { ...editingProduct, ...values } : p));
+          console.log("Mutation input values:", values);
+          await updateProduct({
+            variables: {
+              product_id: editingProduct.product_id,
+              product_name: values.product_name,
+              gender: values.gender,
+              price: parseFloat(values.price),
+              discount_rate: parseFloat(values.discount_rate),
+              category_type: values.category_type,
+              imagePath: values.imagePath || '',
+              brand: values.brand,
+              description: values.description
+            }
+          })
+          setProducts(products.map(p => p.product_id === editingProduct.product_id ? { ...editingProduct, ...values } : p));
           message.success('Product updated successfully');
         } else {
           console.log("Mutation input values:", values);

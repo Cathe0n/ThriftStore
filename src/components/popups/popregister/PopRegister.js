@@ -16,14 +16,7 @@ function PopRegister({ isOpen, onClose, onSwitchToLogin }) {
 
   const [register, { loading }] = useMutation(REGISTER_MUTATION, {
     onCompleted: (data) => {
-      const token = data?.register?.token; // Assuming your registration also returns a token
-      if (token) {
-        login(token); // Automatically log in after registration
-        onClose();
-        navigate("/women");
-      } else {
-        setError("Registration successful but login failed.");
-      }
+      onSwitchToLogin();
     },
     onError: (err) => {
       setError(err.message || "Registration failed.");
