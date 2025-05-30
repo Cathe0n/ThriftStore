@@ -11,6 +11,7 @@ export const ADMIN_LOGIN_MUTATION = gql`
 export const GET_ALL_PRODUCTS = gql`
   query {
     getAllProducts {
+      id
       product_name
       gender
       price
@@ -30,6 +31,13 @@ export const ADMIN_CREATE_PRODUCT = gql`
   { createProduct(product_name:$product_name,gender:$gender,price:$price,discount_rate:$discount_rate,category_type:$category_type,imagePath:$imagePath,brand:$brand,description:$description) 
   { product_name category_type } }
 `;
+
+export const ADMIN_UPDATE_PRODUCT = gql `
+  mutation updateProduct($product_id:String!,$product_name: String!,$gender: String!,$price:Float!,$discount_rate:Float!,$category_type: String!,$imagePath: String!,$brand: String!,$description: String!)
+  { updateProduct(product_id:$product_id,product_name:$product_name,gender:$gender,price:$price,discount_rate:$discount_rate,category_type:$category_type,imagePath:$imagePath,brand:$brand,description:$description) 
+  { product_name category_type } }
+`
+
 // // update product name and discount rate
 // export const ADMIN_UPDATE_PRODUCT = gql `
 
