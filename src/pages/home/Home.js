@@ -83,13 +83,13 @@ const brands = [
 
   const trending = [
     {
-      image: "/images/women/dries.jpg",
+      image: "/images/women/Tops/Bershka/Dries/dries.jpg",
       name: "embellished crepe bustier top",
       brand: "Dries Van Noten",
       price: 889000
     },
     {
-      image: "/images/women/burberry.jpg",
+      image: "/categories/women/burberry.webp",
       name: "cropped trench jacket",
       brand: "Burberry",
       price: 23599000
