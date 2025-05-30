@@ -174,15 +174,12 @@ const handleDelete = (product_id) => {
     okText: 'Delete',
     okType: 'danger',
     cancelText: 'Cancel',
-    onOk: async () => {
-      try {
-        await deleteProduct({ 
-          variables: { product_id } 
-        });
-        message.success('Product deleted successfully');
-      } catch (err) {
-        message.error(`Failed to delete product: ${err.message}`);
-      }
+    onOk() {
+      console.log('Delete confirmed for product ID:', product_id);
+      message.success('Delete functionality would execute here');
+    },
+    onCancel() {
+      console.log('Delete cancelled');
     },
   });
 };
