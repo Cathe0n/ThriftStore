@@ -495,13 +495,11 @@ const AdminPage = () => {
             rules={[{ required: true, message: 'Please select size type' }]}
           >
             <Select placeholder="Select size">
-              <Option value="XS">XS</Option>
               <Option value="S">S</Option>
               <Option value="M">M</Option>
               <Option value="L">L</Option>
               <Option value="XL">XL</Option>
               <Option value="XXL">XXL</Option>
-              <Option value="XXXL">XXXL</Option>
             </Select>
           </Form.Item>
 
