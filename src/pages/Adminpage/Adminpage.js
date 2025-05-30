@@ -159,19 +159,20 @@ const AdminPage = () => {
     setIsModalVisible(true);
   };
 
-  const handleDelete = (product_id) => {
-    Modal.confirm({
-      title: 'Confirm Delete',
-      content: 'Are you sure you want to delete this product?',
-      okText: 'Delete',
-      okType: 'danger',
-      cancelText: 'Cancel',
-      onOk() {
-        setProducts(products.filter(item => item.key !== product_id));
-        message.success('Product deleted successfully');
-      },
-    });
-  };
+const handleDelete = (product_id) => {
+  console.log('handleDelete called with', product_id); // Debug
+  Modal.confirm({
+    title: 'Confirm Delete',
+    content: 'Are you sure you want to delete this product?',
+    okText: 'Delete',
+    okType: 'danger',
+    cancelText: 'Cancel',
+    onOk() {
+      setProducts(prev => prev.filter(item => String(item.key) !== String(product_id)));
+      message.success('Product deleted successfully');
+    },
+  });
+};
 
   const handleSubmit = () => {
     form.validateFields().then(async values => {
