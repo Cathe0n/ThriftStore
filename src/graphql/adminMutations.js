@@ -46,11 +46,38 @@ export const ADMIN_UPDATE_PRODUCT = gql `
 export const ADMIN_DELETE_PRODUCT = gql `
   mutation deleteProduct($product_id: String!) { deleteProduct(product_id: $product_id)}
 `;
-// // adds stock to existing size
-// export const ADMIN_UPDATE_SIZESTOCK_PRODUCT = gql `
+// adds stock to existing size
+export const ADMIN_UPDATE_SIZE_STOCK = gql`
+  mutation updateSizeStock(
+    $product_id: String!
+    $size_type: String!
+    $stock_amount: Int!
+  ) {
+    updateSizeStock(
+      product_id: $product_id
+      size_type: $size_type
+      stock_amount: $stock_amount
+    ) {
+      success
+      message
+    }
+  }
+`;
 
-// `;
-// // create new size and add stock to the new size
-// export const ADMIN_ADD_PRODUCT_SIZE = gql `
-
-// `;
+// create new size and add stock to the new size
+export const ADMIN_ADD_SIZE = gql`
+  mutation addSize(
+    $product_id: String!
+    $size_type: String!
+    $stock_amount: Int!
+  ) {
+    addSize(
+      product_id: $product_id
+      size_type: $size_type
+      stock_amount: $stock_amount
+    ) {
+      success
+      message
+    }
+  }
+`;
