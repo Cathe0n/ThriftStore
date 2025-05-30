@@ -28,6 +28,17 @@ export const GET_PRODUCTS_BY_CATEGORY = gql`
   }
 `;
 
+export const GET_PRODUCTS_BY_BRAND = gql`
+  query getProductbyBrand($brand: String!) {
+    getProductbyBrand(brand: $brand) {
+      id
+      product_name
+      price
+      imagePath
+    }
+  }
+`;
+
 export const GET_PRODUCT_BY_ID = gql`
   query GetProductById($id: ID!) {
     getProductbyId(id: $id) {
@@ -41,3 +52,5 @@ export const GET_PRODUCT_BY_ID = gql`
     }
   }
 `;
+
+

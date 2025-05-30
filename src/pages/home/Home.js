@@ -53,13 +53,33 @@ function Home() {
 
   const categories = categoriesByGender[gender] || [];
 
-  const brands = [
-    { name: 'Adidas', image: '/brands/adidas.webp' },
-    { name: 'Nike', image: '/brands/nike.jpg' },
-    { name: 'Loro Piana', image: '/brands/loro.jpg' },
-    { name: 'Louis Vuitton', image: '/brands/lv.jpg' },
-    { name: 'H&M', image: '/brands/hm.jpg' },
-  ];
+const brands = [
+  { 
+    name: 'Adidas', 
+    image: '/brands/adidas.webp', 
+    value: 'Adidas' 
+  },
+  { 
+    name: 'Nike', 
+    image: '/brands/nike.jpg', 
+    value: 'Nike' 
+  },
+  { 
+    name: 'Loro Piana', 
+    image: '/brands/loro.jpg', 
+    value: 'Loro Piana' 
+  },
+  { 
+    name: 'Louis Vuitton', 
+    image: '/brands/lv.jpg', 
+    value: 'Louis Vuitton' 
+  },
+  { 
+    name: 'H&M', 
+    image: '/brands/hm.jpg', 
+    value: 'H&M' 
+  },
+];
 
   const trending = [
     {
@@ -87,6 +107,10 @@ function Home() {
       }
     });
   };
+
+const handleBrandClick = async (brands) => {
+    navigate("/product", { state: { brand: brands.value } });
+};
 
   const togglePlayback = () => {
     if (videoRef.current) {
@@ -124,7 +148,7 @@ function Home() {
         <p>Please log in to access exclusive deals.</p>
       </div>
 
-      {/* Shop By Category - With API integration */}
+      {/* Shop By Category*/}
       <HorizontalSlider
         title="Shop By Category"
         items={categories}
@@ -137,6 +161,7 @@ function Home() {
       <HorizontalSlider
         title="Shop By Brands"
         items={brands}
+        onItemClick={handleBrandClick}
         onSeeAll={handleSeeAllBrands}
         bgColor="#f8f8f8"
       />
