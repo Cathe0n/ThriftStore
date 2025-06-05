@@ -7,26 +7,48 @@ import './Adminpage.css';
 import { ADMIN_LOGIN_MUTATION, GET_ALL_PRODUCTS } from '../../graphql/adminMutations';
 import { ADMIN_CREATE_PRODUCT } from '../../graphql/adminMutations';
 import { ADMIN_UPDATE_PRODUCT } from '../../graphql/adminMutations';
+import { ADMIN_DELETE_PRODUCT } from '../../graphql/adminMutations';
+import { ADMIN_ADD_SIZE } from '../../graphql/adminMutations';
+import { ADMIN_UPDATE_SIZE_STOCK } from '../../graphql/adminMutations';
+
 const { Option } = Select;
 
 const AdminPage = () => {
   const { data, loading, error } = useQuery(GET_ALL_PRODUCTS);
-  const [createProduct, { loading: loading_M, error: error_M }] = useMutation(ADMIN_CREATE_PRODUCT, {
-  refetchQueries: ['getAllProducts'], // Refetch your product list query after mutation
-  awaitRefetchQueries: true,
+  const [createProduct, { loading: loadingCreate }] = useMutation(ADMIN_CREATE_PRODUCT, {
+    refetchQueries: [{ query: GET_ALL_PRODUCTS }],
+    awaitRefetchQueries: true,
   });
-  const [updateProduct,{ loading: loading_M2, error: error_M2}] = useMutation(ADMIN_UPDATE_PRODUCT, {
-  refetchQueries: ['getAllProducts'],
-  awaitRefetchQueries: true,
-  })
+  const [updateProduct, { loading: loadingUpdate }] = useMutation(ADMIN_UPDATE_PRODUCT, {
+    refetchQueries: [{ query: GET_ALL_PRODUCTS }],
+    awaitRefetchQueries: true,
+  });
+  const [deleteProduct, { loading: loadingDelete }] = useMutation(ADMIN_DELETE_PRODUCT, {
+    refetchQueries: [{ query: GET_ALL_PRODUCTS }],
+    awaitRefetchQueries: true,
+  });
+  const [addSize] = useMutation(ADMIN_ADD_SIZE, {
+    refetchQueries: [{ query: GET_ALL_PRODUCTS }],
+    awaitRefetchQueries: true,
+  });
+  const [updateSizeStock] = useMutation(ADMIN_UPDATE_SIZE_STOCK, {
+    refetchQueries: [{ query: GET_ALL_PRODUCTS }],
+    awaitRefetchQueries: true,
+  });
+  
   const [products, setProducts] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [productToDelete, setProductToDelete] = useState(null);
+  const [isAddSizeModalVisible, setIsAddSizeModalVisible] = useState(false);
+  const [isUpdateSizeModalVisible, setIsUpdateSizeModalVisible] = useState(false);
+  const [currentProductId, setCurrentProductId] = useState(null);
   const [form] = Form.useForm();
+  const [sizeForm] = Form.useForm();
 
   useEffect(() => {
     if (data?.getAllProducts) {
-      // Map GraphQL products to table format
       const formattedProducts = data.getAllProducts.map((p, index) => ({
         key: p.id,
         product_id: p.id,
@@ -44,12 +66,7 @@ const AdminPage = () => {
       setProducts(formattedProducts);
     }
   }, [data]);
-  useEffect(() => {
-  if (error_M) {
-    console.error("Mutation error:", error_M);
-    message.error(`Failed to add product: ${error_M.message}`);
-  }
-  }, [error_M]);
+
   const columns = [
     {
       title: 'Category',
@@ -112,7 +129,7 @@ const AdminPage = () => {
     {
       title: 'Actions',
       key: 'actions',
-      width: 160,
+      width: 260,
       fixed: 'right',
       render: (_, record) => (
         <div className="table-actions">
@@ -128,8 +145,23 @@ const AdminPage = () => {
             icon={<DeleteOutlined />} 
             danger
             onClick={() => handleDelete(record.product_id)}
+            loading={loadingDelete}
           >
             Delete
+          </Button>
+          <Button 
+            type="link" 
+            onClick={() => handleAddSize(record.product_id)}
+            style={{ color: '#1890ff' }}
+          >
+            Add Size
+          </Button>
+          <Button 
+            type="link" 
+            onClick={() => handleUpdateSizeStock(record.product_id)}
+            style={{ color: '#52c41a' }}
+          >
+            Update Stock
           </Button>
         </div>
       ),
@@ -160,24 +192,26 @@ const AdminPage = () => {
   };
 
   const handleDelete = (product_id) => {
-    Modal.confirm({
-      title: 'Confirm Delete',
-      content: 'Are you sure you want to delete this product?',
-      okText: 'Delete',
-      okType: 'danger',
-      cancelText: 'Cancel',
-      onOk() {
-        setProducts(products.filter(item => item.key !== product_id));
-        message.success('Product deleted successfully');
-      },
-    });
+    setProductToDelete(product_id);
+    setIsDeleteModalVisible(true);
+  };
+
+  const handleAddSize = (productId) => {
+    setCurrentProductId(productId);
+    sizeForm.resetFields();
+    setIsAddSizeModalVisible(true);
+  };
+
+  const handleUpdateSizeStock = (productId) => {
+    setCurrentProductId(productId);
+    sizeForm.resetFields();
+    setIsUpdateSizeModalVisible(true);
   };
 
   const handleSubmit = () => {
     form.validateFields().then(async values => {
       try {
         if (editingProduct) {
-          console.log("Mutation input values:", values);
           await updateProduct({
             variables: {
               product_id: editingProduct.product_id,
@@ -190,11 +224,9 @@ const AdminPage = () => {
               brand: values.brand,
               description: values.description
             }
-          })
-          setProducts(products.map(p => p.product_id === editingProduct.product_id ? { ...editingProduct, ...values } : p));
+          });
           message.success('Product updated successfully');
         } else {
-          console.log("Mutation input values:", values);
           await createProduct({
             variables: {
               product_name: values.product_name,
@@ -207,7 +239,6 @@ const AdminPage = () => {
               description: values.description
             }
           });
-
           message.success('Product added successfully');
         }
 
@@ -219,9 +250,42 @@ const AdminPage = () => {
     });
   };
 
+  const handleAddSizeSubmit = async () => {
+    try {
+      const values = await sizeForm.validateFields();
+      await addSize({
+        variables: {
+          product_id: currentProductId,
+          size_type: values.size_type,
+          stock_amount: values.stock_amount
+        }
+      });
+      message.success('Size added successfully');
+      setIsAddSizeModalVisible(false);
+    } catch (err) {
+      message.error(`Failed to add size: ${err.message}`);
+    }
+  };
+
+  const handleUpdateSizeStockSubmit = async () => {
+    try {
+      const values = await sizeForm.validateFields();
+      await updateSizeStock({
+        variables: {
+          product_id: currentProductId,
+          size_type: values.size_type,
+          stock_amount: values.stock_amount
+        }
+      });
+      message.success('Size stock updated successfully');
+      setIsUpdateSizeModalVisible(false);
+    } catch (err) {
+      message.error(`Failed to update size stock: ${err.message}`);
+    }
+  };
 
   if (loading) return <p>Loading products...</p>;
-  if (error) return <p>Error loading products: {error.message}</p>;
+  if (error) return <p>Error loading products: ${error.message}</p>;
 
   return (
     <div className="admin-dashboard-container">
@@ -237,6 +301,7 @@ const AdminPage = () => {
                 icon={<PlusOutlined />} 
                 onClick={handleAdd}
                 size="large"
+                loading={loadingCreate}
               >
                 Add Product
               </Button>
@@ -260,14 +325,42 @@ const AdminPage = () => {
               className="products-table"
               columns={columns}
               dataSource={products}
-              scroll={{ x: 1300, y: 'calc(100vh - 350px)' }}
+              scroll={{ x: 1500, y: 'calc(100vh - 350px)' }}
               pagination={false}
               bordered
+              loading={loading || loadingDelete}
             />
           </div>
         </Card>
       </div>
 
+      {/* Delete Product Modal */}
+      <Modal
+        title="Confirm Delete"
+        visible={isDeleteModalVisible}
+        onOk={async () => {
+          try {
+            await deleteProduct({ variables: { product_id: productToDelete } });
+            message.success('Product deleted successfully');
+          } catch (err) {
+            message.error(`Failed to delete product: ${err.message}`);
+          } finally {
+            setIsDeleteModalVisible(false);
+          }
+        }}
+        onCancel={() => setIsDeleteModalVisible(false)}
+        okType="danger"
+        okText="Delete"
+        cancelText="Cancel"
+        okButtonProps={{
+          danger: true,
+          type: 'primary',
+        }}
+      >
+        <p>Are you sure you want to delete this product? This action cannot be undone.</p>
+      </Modal>
+
+      {/* Add/Edit Product Modal */}
       <Modal
         title={editingProduct ? "Edit Product" : "Add New Product"}
         visible={isModalVisible}
@@ -276,6 +369,7 @@ const AdminPage = () => {
         width={800}
         okText={editingProduct ? "Update" : "Create"}
         cancelText="Cancel"
+        confirmLoading={loadingCreate || loadingUpdate}
       >
         <Form form={form} layout="vertical">
           <Form.Item 
@@ -285,27 +379,25 @@ const AdminPage = () => {
           >
             <Select placeholder="Select category">
               <Option value="Women's Tops">Women's Tops</Option>
-              <Option value="Women's Sweaters & Hoodies">Women's Sweaters & Hoodiess</Option>
+              <Option value="Women's Sweaters & Hoodies">Women's Sweaters & Hoodies</Option>
               <Option value="Women's Bottoms">Women's Bottoms</Option>
               <Option value="Women's Activewear">Women's Activewear</Option>
               <Option value="Women's Dresses & Skirts">Women's Dresses & Skirts</Option>
               <Option value="Women's Outerwear">Women's Outerwear</Option>
 
               <Option value="Men's Tops">Men's Tops</Option>
-              <Option value="Men's Sweaters & Hoodiess">Men's Sweaters & Hoodiess</Option>
+              <Option value="Men's Sweaters & Hoodies">Men's Sweaters & Hoodies</Option>
               <Option value="Men's Bottoms">Men's Bottoms</Option>
               <Option value="Men's Activewear">Men's Activewear</Option>
               <Option value="Men's Outerwear">Men's Outerwear</Option>
               <Option value="Men's Loungewear">Men's Loungewear</Option>
               
               <Option value="Kids Tops">Kids Tops</Option>
-              <Option value="Kids Sweaters & Hoodies">Kids Sweaters & Hoodiess</Option>
+              <Option value="Kids Sweaters & Hoodies">Kids Sweaters & Hoodies</Option>
               <Option value="Kids Bottoms">Kids Bottoms</Option>
               <Option value="Kids Activewear">Kids Activewear</Option>
               <Option value="Kids Outerwear">Kids Outerwear</Option>
               <Option value="Kids Loungewear & Pajamas">Kids Loungewear</Option>
-          
-              {/* add more if needed */}
             </Select>
           </Form.Item>
 
@@ -383,6 +475,76 @@ const AdminPage = () => {
             rules={[{ required: false }]}
           >
             <Input placeholder="URL or file path" />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Add Size Modal */}
+      <Modal
+        title="Add Size"
+        visible={isAddSizeModalVisible}
+        onOk={handleAddSizeSubmit}
+        onCancel={() => setIsAddSizeModalVisible(false)}
+        okText="Add"
+        cancelText="Cancel"
+      >
+        <Form form={sizeForm} layout="vertical">
+          <Form.Item 
+            name="size_type" 
+            label="Size Type" 
+            rules={[{ required: true, message: 'Please select size type' }]}
+          >
+            <Select placeholder="Select size">
+              <Option value="S">S</Option>
+              <Option value="M">M</Option>
+              <Option value="L">L</Option>
+              <Option value="XL">XL</Option>
+              <Option value="XXL">XXL</Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item 
+            name="stock_amount" 
+            label="Stock Amount" 
+            rules={[{ required: true, message: 'Please input stock amount' }]}
+          >
+            <InputNumber min={0} style={{ width: '100%' }} />
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Update Size Stock Modal */}
+      <Modal
+        title="Update Size Stock"
+        visible={isUpdateSizeModalVisible}
+        onOk={handleUpdateSizeStockSubmit}
+        onCancel={() => setIsUpdateSizeModalVisible(false)}
+        okText="Update"
+        cancelText="Cancel"
+      >
+        <Form form={sizeForm} layout="vertical">
+          <Form.Item 
+            name="size_type" 
+            label="Size Type" 
+            rules={[{ required: true, message: 'Please select size type' }]}
+          >
+            <Select placeholder="Select size">
+              <Option value="XS">XS</Option>
+              <Option value="S">S</Option>
+              <Option value="M">M</Option>
+              <Option value="L">L</Option>
+              <Option value="XL">XL</Option>
+              <Option value="XXL">XXL</Option>
+              <Option value="XXXL">XXXL</Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item 
+            name="stock_amount" 
+            label="New Stock Amount" 
+            rules={[{ required: true, message: 'Please input stock amount' }]}
+          >
+            <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
         </Form>
       </Modal>
