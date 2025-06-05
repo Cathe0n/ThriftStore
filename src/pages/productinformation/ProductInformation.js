@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useContext, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { GET_PRODUCT_BY_ID } from "../../graphql/mutations";
+import { useQuery } from "@apollo/client";
 import { FaHeart, FaRegHeart, FaShoppingBag } from "react-icons/fa";
 import "./ProductInformation.css";
 
@@ -8,8 +10,8 @@ const ProductInformation = () => {
   const { id } = useParams();
   const { user } = useAuth();
   const [product, setProduct] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [selectedSize, setSelectedSize] = useState("");
+  // const [loading, setLoading] = useState(true);
+  // const [selectedSize, setSelectedSize] = useState("");
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [flyingItems, setFlyingItems] = useState([]);
@@ -17,45 +19,28 @@ const ProductInformation = () => {
   const headerBagRef = useRef(null);
   const addToCartButtonRef = useRef(null);
 
-  useEffect(() => {
-    const fetchProduct = async () => {
-      try {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        const mockProducts = [
-          {
-            id: "1",
-            name: "Premium Running Shoes",
-            brand: "Nike",
-            price: 1200000,
-            description: "High-performance running shoes with cushioning technology",
-            images: [
-              "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
-              "https://images.unsplash.com/photo-1600269452121-4f2416e55c28?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
-              "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80"
-            ],
-            sizes: ["38", "39", "40", "41", "42"],
-            stock: {
-              "38": 5,
-              "39": 8,
-              "40": 10,
-              "41": 7,
-              "42": 7
-            }
-          },
-        ];
-        
-        const foundProduct = mockProducts.find(p => p.id === id);
-        setProduct(foundProduct);
-      } catch (error) {
-        console.error("Error fetching product:", error);
-      } finally {
-        setLoading(false);
-      }
+  const { loading, error, data } = useQuery(GET_PRODUCT_BY_ID, {
+  variables: { id: `${id}` },
+});
+
+useEffect(() => {
+  if (data?.getProductbyId) {
+    const transformedProduct = {
+      id: data.getProductbyId.id,
+      name: data.getProductbyId.product_name,
+      brand: data.getProductbyId.brand,
+      price: data.getProductbyId.price,
+      description: data.getProductbyId.description,
+      images: data.getProductbyId.imagePath 
+        ? data.getProductbyId.imagePath.split(',') 
+          .map(url => url.trim()) // Clean whitespace
+          .filter(url => url !== '') // Remove empty strings
+        : [], // Fallback empty array
+      stock: data.getProductbyId.Total_stock,
     };
-    
-    fetchProduct();
-  }, [id]);
+    setProduct(transformedProduct);
+  }
+}, [data]);
 
   const handleOrder = () => {
     if (!user) {
@@ -64,11 +49,11 @@ const ProductInformation = () => {
       return;
     }
     
-    if (!selectedSize) {
-      setActiveTooltip('size');
-      setTimeout(() => setActiveTooltip(null), 2000);
-      return;
-    }
+    // if (!selectedSize) {
+    //   setActiveTooltip('size');
+    //   setTimeout(() => setActiveTooltip(null), 2000);
+    //   return;
+    // }
     
     const buttonRect = addToCartButtonRef.current.getBoundingClientRect();
     const startX = buttonRect.left + buttonRect.width / 2;
@@ -82,8 +67,12 @@ const ProductInformation = () => {
     };
     setFlyingItems([...flyingItems, newItem]);
     
+    // setTimeout(() => {
+    //   alert(`Added ${product.name} (Size: ${selectedSize}) to cart`);
+    // }, 1000);
+
     setTimeout(() => {
-      alert(`Added ${product.name} (Size: ${selectedSize}) to cart`);
+      alert(`Added ${product.name} to cart`);
     }, 1000);
   };
 
@@ -96,12 +85,14 @@ const ProductInformation = () => {
     setIsWishlisted(!isWishlisted);
   };
 
+  // SELECTED SIZE IS COMMENTED NOW
   const handleAddToCartHover = () => {
     if (!user) {
       setActiveTooltip('login');
-    } else if (!selectedSize) {
-      setActiveTooltip('size');
-    }
+    } 
+    // else if (!selectedSize) {
+    //   setActiveTooltip('size');
+    // }
   };
 
   const handleThumbnailClick = (index) => {
@@ -142,12 +133,17 @@ const ProductInformation = () => {
   }, [flyingItems]);
 
   if (loading) {
-    return <div className="loading">Loading...</div>;
-  }
+  return <div className="loading">Loading...</div>;
+}
 
-  if (!product) {
-    return <div className="not-found">Product not found</div>;
-  }
+if (error) {
+  console.error("Full error details:", error.networkError?.result, error.graphQLErrors);
+  return <div>Error loading product</div>;
+}
+
+if (!product) {
+  return <div className="not-found">Product not found</div>;
+}
 
   return (
     <div className="product-information">
@@ -173,6 +169,7 @@ const ProductInformation = () => {
             alt={product.name} 
             className={`main-image ${currentImageIndex === 0 ? 'first-image' : ''}`}
           />
+          
         </div>
         <div className="thumbnail-container">
           {product.images.map((img, index) => (
@@ -210,7 +207,8 @@ const ProductInformation = () => {
         <p className="product-brand">{product.brand}</p>
         <p className="product-price">Rp {product.price.toLocaleString("id-ID")}</p>
         
-        <div className="size-selection">
+        {/* SIZE IS COMMENTED OUT FOR NOW */}
+        {/* <div className="size-selection">
           <h3>Size</h3>
           <div className="size-options">
             {product.sizes.map(size => (
@@ -226,7 +224,7 @@ const ProductInformation = () => {
           <p className="size-stock">
             Stock: {selectedSize ? product.stock[selectedSize] : "Please select a size"}
           </p>
-        </div>
+        </div> */}
         
         <button 
           ref={addToCartButtonRef}

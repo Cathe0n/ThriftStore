@@ -28,10 +28,25 @@ function Product() {
   if (loading) return <div className="product-page loading">Loading products...</div>;
   if (error) return <div className="product-page error">Error loading products: {error.message}</div>;
   if (!data) return <div className="product-page">No products found.</div>;
-
-  const products = isBrand 
-    ? data.getProductbyBrand || [] 
-    : data.getProductbyCategory || [];
+  
+// Transform the product data to include images as an array and check if it's brand or category
+const products = isBrand 
+  ? data.getProductbyBrand?.map(product => ({
+      ...product, // Keep all original fields
+      images: product.imagePath 
+        ? product.imagePath.split(',')
+            .map(url => url.trim())
+            .filter(url => url)
+        : []
+    })) || []
+  : data.getProductbyCategory?.map(product => ({
+      ...product,
+      images: product.imagePath 
+        ? product.imagePath.split(',')
+            .map(url => url.trim())
+            .filter(url => url)
+        : []
+    })) || [];
 
   console.log(products); // Check the fetched products
   return (

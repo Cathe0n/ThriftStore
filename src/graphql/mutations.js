@@ -47,8 +47,9 @@ export const GET_PRODUCT_BY_ID = gql`
       price
       imagePath
       description
+      brand
       category_type
-      stock
+      Total_stock
     }
   }
 `;
