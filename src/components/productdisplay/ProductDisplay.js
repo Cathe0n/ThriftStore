@@ -6,12 +6,13 @@ const ProductDisplay = ({ product }) => {
   const navigate = useNavigate();
 
   const {
-    imagePath = '',
+    images = '',
     product_name = 'Product Name Not Available',
     price = 0,
     id = ''
   } = product || {};
 
+    const mainImage = images[0];
   const formatPrice = (amount) => {
     return new Intl.NumberFormat('id-ID', {
       style: 'currency',
@@ -28,7 +29,7 @@ const ProductDisplay = ({ product }) => {
     <div className="product-display" key={id} onClick={handleClick}>
       <div className="product-image-container">
         <img 
-          src={imagePath || '/images/placeholder.jpg'} 
+          src={mainImage || '/images/placeholder.jpg'} 
           alt={product_name}
           className="product-image"
         />

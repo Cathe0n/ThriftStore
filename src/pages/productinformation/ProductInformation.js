@@ -23,63 +23,24 @@ const ProductInformation = () => {
   variables: { id: `${id}` },
 });
 
-// Add this after the useQuery hook
 useEffect(() => {
   if (data?.getProductbyId) {
-    // Transform the API response to match your component's expected format
     const transformedProduct = {
       id: data.getProductbyId.id,
       name: data.getProductbyId.product_name,
-      brand: data.getProductbyId.brand, // Using category_type as brand
+      brand: data.getProductbyId.brand,
       price: data.getProductbyId.price,
       description: data.getProductbyId.description,
-      images: [data.getProductbyId.imagePath], // Assuming imagePath is a single string
+      images: data.getProductbyId.imagePath 
+        ? data.getProductbyId.imagePath.split(',') 
+          .map(url => url.trim()) // Clean whitespace
+          .filter(url => url !== '') // Remove empty strings
+        : [], // Fallback empty array
       stock: data.getProductbyId.Total_stock,
     };
     setProduct(transformedProduct);
-    // setLoading(false);
   }
 }, [data]);
-
-  // useEffect(() => {
-  //   const fetchProduct = async () => {
-  //     try {
-  //       await new Promise(resolve => setTimeout(resolve, 500));
-        
-  //       const mockProducts = [
-  //         {
-  //           id: "1",
-  //           name: "Premium Running Shoes",
-  //           brand: "Nike",
-  //           price: 1200000,
-  //           description: "High-performance running shoes with cushioning technology",
-  //           images: [
-  //             "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
-  //             "https://images.unsplash.com/photo-1600269452121-4f2416e55c28?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80",
-  //             "https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80"
-  //           ],
-  //           sizes: ["38", "39", "40", "41", "42"],
-  //           stock: {
-  //             "38": 5,
-  //             "39": 8,
-  //             "40": 10,
-  //             "41": 7,
-  //             "42": 7
-  //           }
-  //         },
-  //       ];
-        
-  //       const foundProduct = mockProducts.find(p => p.id === id);
-  //       setProduct(foundProduct);
-  //     } catch (error) {
-  //       console.error("Error fetching product:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-    
-  //   fetchProduct();
-  // }, [id]);
 
   const handleOrder = () => {
     if (!user) {
@@ -203,16 +164,12 @@ if (!product) {
 
       <div className="product-gallery">
         <div className="main-image-container">
-          {/* <img 
+          <img 
             src={product.images[currentImageIndex]} 
             alt={product.name} 
             className={`main-image ${currentImageIndex === 0 ? 'first-image' : ''}`}
-          /> */}
-          <img 
-            src={product.images[0]} // Now using the single image
-            alt={product.name} 
-            className={`main-image ${currentImageIndex === 0 ? 'first-image' : ''}`}
           />
+          
         </div>
         <div className="thumbnail-container">
           {product.images.map((img, index) => (
