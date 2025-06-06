@@ -1,0 +1,45 @@
+/* Order Details Modal */
+.order-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.order-section {
+  background: #f8fafc;
+  border-radius: 8px;
+  padding: 1rem;
+  border: 1px solid #e2e8f0;
+}
+
+.order-section .section-title {
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.info-grid > div {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.order-totals {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px dashed #e2e8f0;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

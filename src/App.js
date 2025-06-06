@@ -18,6 +18,8 @@ import PrivateRoute from "./PrivateRoute";
 import ShoppingBag from "./pages/shoppingbag/ShoppingBag.js"; 
 import Wishlist from "./pages/wishlist/Wishlist";
 import AdminPrivateRoute from "./AdminPrivateRoute";
+import UserTransaction from "./pages/usertransaction/UserTransaction.js";
+
 function AppHeader() {
   const location = useLocation();
   const noHeaderPaths = ["/adminloginpage", "/adminpage"];
@@ -51,6 +53,7 @@ function App() {
             <Route path="/adminorder" element={<AdminPrivateRoute> <AdminOrder /> </AdminPrivateRoute>} />
             <Route path="/bag" element={<ShoppingBag />} />
             <Route path="/wishlist" element={<Wishlist />} />
+            <Route path="/userTransaction" element={<UserTransaction />} />
           </Routes>
         </Router>
       </AuthProvider>

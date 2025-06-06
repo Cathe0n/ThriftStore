@@ -1,0 +1,253 @@
+.order-dashboard-container {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.ant-btn {
+  background-color: #000000;
+  color: #ffffff;
+  border: 1px solid #000000;
+}
+
+.ant-btn:hover,
+.ant-btn:focus {
+  background-color: #1a1a1a;
+  border-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.ant-btn:active {
+  background-color: #000000;
+  border-color: #000000;
+  color: #ffffff;
+}
+
+/* Header Section */
+.order-header-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.order-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  color: #000000;
+  letter-spacing: -0.5px;
+}
+
+.order-subtitle {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* Orders Section */
+.orders-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.status-filter {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.status-filter .ant-tag {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.status-filter .ant-tag:hover {
+  opacity: 0.8;
+  transform: translateY(-1px);
+}
+
+/* Table Styles */
+.orders-table {
+  flex: 1;
+  overflow: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.orders-table .ant-table {
+  height: 100%;
+}
+
+.orders-table .ant-table-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.orders-table .ant-table-thead > tr > th {
+  background-color: #f8fafc;
+  color: #64748b;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.orders-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.orders-table .ant-table-tbody > tr:hover > td {
+  background-color: #f8fafc !important;
+}
+
+
+
+/* Status Tags */
+.ant-tag-processing {
+  background: #e0f2fe;
+  color: #0369a1;
+  border-color: #bae6fd;
+}
+
+.ant-tag-geekblue {
+  background: #dbeafe;
+  color: #1d4ed8;
+  border-color: #bfdbfe;
+}
+
+.ant-tag-green {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.ant-tag-orange {
+  background: #ffedd5;
+  color: #9a3412;
+  border-color: #fed7aa;
+}
+
+.ant-tag-red {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+  .order-dashboard-container {
+    height: auto;
+    min-height: calc(100vh - 4rem);
+  }
+  
+  .info-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .order-dashboard-container {
+    padding: 1rem;
+  }
+  
+  .order-header {
+    flex-direction: column;
+  }
+  
+  .action-buttons {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  .action-buttons .ant-btn {
+    flex: 1;
+    min-width: 120px;
+  }
+  
+  .orders-table .ant-table-thead > tr > th,
+  .orders-table .ant-table-tbody > tr > td {
+    padding: 12px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .status-filter {
+    width: 100%;
+    justify-content: flex-start;
+  margin-top: 0.5rem;
+  }
+  
+  .ant-modal {
+    max-width: calc(100vw - 32px);
+    width: 100% !important;
+    margin: 16px auto;
+  }
+}
+
+/* Filter Modal Styles */
+.filter-modal .ant-modal-body {
+  padding: 16px 24px;
+}
+
+.filter-modal .ant-divider {
+  margin: 12px 0;
+}
+
+.filter-modal .ant-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  margin: 8px 0;
+}
+
+.filter-modal .ant-tag {
+  margin-left: 8px;
+}
+
+.filter-badge {
+  display: inline-block;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  font-size: 12px;
+  line-height: 16px;
+  border-radius: 8px;
+  background-color: #1890ff;
+  color: #fff;
+  margin-left: 8px;
+}
