@@ -54,4 +54,10 @@ export const GET_PRODUCT_BY_ID = gql`
   }
 `;
 
-
+export const GET_PRODUCT_SIZE_STOCK = gql`
+  query getProductbySize($product_id: String!, $size_type: String!) {
+    getProductbySize(product_id: $product_id, size_type: $size_type) {
+      stock_amount
+    }
+  }
+`;
