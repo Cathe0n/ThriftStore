@@ -7,6 +7,7 @@ import {
   ADD_TO_WISHLIST,
   GET_WISHLIST_BY_CUSTOMER_ID,
   REMOVE_FROM_WISHLIST,
+  ADD_PRODUCT_TO_CART,
 } from "../../graphql/mutations";
 import { useQuery, useLazyQuery, useMutation } from "@apollo/client";
 import { FaHeart, FaRegHeart, FaShoppingBag } from "react-icons/fa";
@@ -26,6 +27,7 @@ const ProductInformation = () => {
   const [flyingItems, setFlyingItems] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const [sizeStock, setSizeStock] = useState({});
   const [stockLoading, setStockLoading] = useState(true);
   const headerBagRef = useRef(null);
@@ -36,7 +38,6 @@ const ProductInformation = () => {
   });
 
   const [fetchStock] = useLazyQuery(GET_PRODUCT_SIZE_STOCK);
-
   const [fetchWishlist] = useLazyQuery(GET_WISHLIST_BY_CUSTOMER_ID, {
     onCompleted: (res) => {
       const wishlist = res?.getWishListByCustomerId || [];
@@ -66,6 +67,16 @@ const ProductInformation = () => {
     onError: (err) => {
       console.error("Wishlist removal error:", err.message);
       toast.error("Failed to remove from wishlist");
+    },
+  });
+
+  const [addToCartMutation] = useMutation(ADD_PRODUCT_TO_CART, {
+    onCompleted: () => {
+      toast.success("Added to cart!");
+    },
+    onError: (err) => {
+      console.error("Add to cart error:", err.message);
+      toast.error("Failed to add to cart");
     },
   });
 
@@ -128,15 +139,37 @@ const ProductInformation = () => {
       setTimeout(() => setActiveTooltip(null), 2000);
       return;
     }
+    if (quantity > Math.min(10, sizeStock[selectedSize] ?? 0)) {
+      toast.error("Requested quantity exceeds available stock");
+      return;
+    }
+    addToCartMutation({
+      variables: {
+        product_id: id,
+        quantity: quantity,
+        size_type: selectedSize,
+      },
+    });
+
     const buttonRect = addToCartButtonRef.current.getBoundingClientRect();
     const startX = buttonRect.left + buttonRect.width / 2;
     const startY = buttonRect.top + buttonRect.height / 2;
     const newItem = { id: Date.now(), x: startX, y: startY, progress: 0 };
     setFlyingItems([...flyingItems, newItem]);
-    setTimeout(() => {
-      alert(`Added ${product.name} (Size: ${selectedSize}) to cart`);
-    }, 1000);
   };
+
+  const handleQuantityChange = (value) => {
+    const num = parseInt(value);
+    const maxQty = Math.min(10, sizeStock[selectedSize] ?? 10);
+    if (!isNaN(num) && num >= 1 && num <= maxQty) setQuantity(num);
+  };
+
+  const increaseQuantity = () => {
+    const maxQty = Math.min(10, sizeStock[selectedSize] ?? 10);
+    setQuantity((prev) => (prev < maxQty ? prev + 1 : prev));
+  };
+
+  const decreaseQuantity = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   const handleWishlistClick = () => {
     if (!user) {
@@ -303,6 +336,22 @@ const ProductInformation = () => {
               </p>
             </>
           )}
+        </div>
+
+        <div className="quantity-selector">
+          <h3>Quantity</h3>
+          <div className="qty-controls">
+            <button className="qty-btn" onClick={decreaseQuantity}>-</button>
+            <input
+              type="number"
+              className="qty-input"
+              value={quantity}
+              onChange={(e) => handleQuantityChange(e.target.value)}
+              min={1}
+              max={Math.min(10, sizeStock[selectedSize] ?? 10)}
+            />
+            <button className="qty-btn" onClick={increaseQuantity}>+</button>
+          </div>
         </div>
 
         <button
