@@ -61,3 +61,27 @@ export const GET_PRODUCT_SIZE_STOCK = gql`
     }
   }
 `;
+
+export const ADD_TO_WISHLIST = gql`
+  mutation addToWishList($product_id: String!) {
+    addToWishList(product_id: $product_id) {
+      product_name
+    }
+  }
+`;
+
+export const GET_WISHLIST_BY_CUSTOMER_ID = gql`
+  query GetWishListByCustomerId {
+    getWishListByCustomerId {
+      id
+      product_id
+      product_name
+    }
+  }
+`;
+
+export const REMOVE_FROM_WISHLIST = gql`
+  mutation removeFromwishList($wishlist_id: String!) {
+    removeFromwishList(wishlist_id: $wishlist_id)
+  }
+`;
