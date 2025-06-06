@@ -85,3 +85,13 @@ export const REMOVE_FROM_WISHLIST = gql`
     removeFromwishList(wishlist_id: $wishlist_id)
   }
 `;
+
+export const ADD_PRODUCT_TO_CART = gql`
+  mutation addProducttoShoppingcart($product_id: String!, $quantity: Int!, $size_type: String!) {
+    addProducttoShoppingcart(product_id: $product_id, quantity: $quantity, size_type: $size_type) {
+      product_id
+      quantity
+      total_price
+    }
+  }
+`;
