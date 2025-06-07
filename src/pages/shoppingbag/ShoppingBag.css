@@ -1,44 +1,113 @@
-/* src/pages/shoppingbag.css */
 .shoppingbag-container {
-  padding: 10px 20px 20px 20px; /* top right bottom left */
-}
-
-
-.location-box {
-  border: 1px solid #aaa;
   padding: 20px;
-  margin-bottom: 20px;
-  margin-top: 10px;
 }
 
 .content-area {
   display: flex;
-  justify-content: space-between;
-  gap: 20px;
+  gap: 30px;
+  align-items: flex-start;
 }
 
 .items-list {
   flex: 2;
-  max-height: 400px;
-  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 20px;
 }
 
-.payment-summary {
+.payment-summary-box {
   flex: 1;
-  border: 1px solid #aaa;
+  border: 1px solid #ccc;
   padding: 20px;
+  border-radius: 12px;
+  background: #f9f9f9;
 }
 
 .pay-now {
-  margin-top: 20px;
-  padding: 12px;
-  width: 100%;
   background-color: black;
   color: white;
-  font-weight: bold;
+  padding: 10px 18px;
   border: none;
+  border-radius: 8px;
   cursor: pointer;
+  margin-top: 12px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.5); /* blur effect with dark overlay */
+  backdrop-filter: blur(5px); /* actual blur */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal {
+  background-color: #fff;
+  padding: 30px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  position: relative;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+  text-align: left; /* Changed from center to left */
+}
+
+.modal h3 {
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+.modal textarea {
+  width: 100%;
+  padding: 10px;
+  resize: vertical;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  margin-bottom: 10px;
+}
+
+.modal .pay-now {
+  display: inline-block;
+  background-color: black;
+  color: white;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.close-modal {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+
+.confirmation {
+  margin-top: 20px;
+  color: green;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tick-icon {
+  font-size: 2.5rem;
+  animation: pop 0.4s ease-in-out;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(1); }
 }
