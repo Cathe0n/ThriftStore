@@ -55,3 +55,6 @@ export const ADMIN_ADD_SIZE = gql`
 export const ADMIN_VIEW_SIZES_BY_PRODUCT_ID = gql `
   query getProductsizes($product_id: String!) { getProductsizes(product_id: $product_id) { size_type stock_amount } }
 `;
+export const GET_ALL_ORDERS = gql `
+  query { getAllorders { customer_id product_id size_type quantity total_price } }
+`

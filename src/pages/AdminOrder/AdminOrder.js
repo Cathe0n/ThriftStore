@@ -1,55 +1,40 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import { Table, Tag, Button, Modal, Card, Typography, Badge, message } from 'antd';
 import { FilterOutlined, EyeOutlined, SyncOutlined } from '@ant-design/icons';
 import './AdminOrder.css'; 
 import AdminHeader from '../../components/header/AdminHeader';
 import OrderFilter from './OrderFilter';
-
+import { useMutation, useQuery, useLazyQuery } from "@apollo/client";
+import { GET_ALL_ORDERS } from '../../graphql/adminMutations';
 const { Title, Text } = Typography;
 
 const AdminOrder = () => {
-  const [orders, setOrders] = useState([
-    {
-      key: '1',
-      orderId: 'ORD-2023-001',
-      customer: 'John Doe',
-      date: '2023-10-15',
-      items: 3,
-      total: 4299000, // Rp 4,299,000
-      status: 'Processing',
-      address: '123 Main St, New York, NY',
-    },
-    {
-      key: '2',
-      orderId: 'ORD-2023-002',
-      customer: 'Jane Smith',
-      date: '2023-10-16',
-      items: 5,
-      total: 8750000, // Rp 8,750,000
-      status: 'Shipped',
-      address: '456 Park Ave, Boston, MA',
-    },
-    {
-      key: '3',
-      orderId: 'ORD-2023-003',
-      customer: 'Robert Johnson',
-      date: '2023-10-17',
-      items: 2,
-      total: 2499000, // Rp 2,499,000
-      status: 'Delivered',
-      address: '789 Oak St, Chicago, IL',
-    },
-    {
-      key: '4',
-      orderId: 'ORD-2023-004',
-      customer: 'Emily Davis',
-      date: '2023-10-18',
-      items: 4,
-      total: 6575000, // Rp 6,575,000
-      status: 'Pending',
-      address: '321 Pine Rd, Seattle, WA',
-    },
-  ]);
+  const { data, loading, error } = useQuery(GET_ALL_ORDERS);
+  const [orders, setOrders] = useState([]);
+  useEffect(() => {
+    if (data?.getAllorders) {
+      const formattedOrders = data.getAllorders.map((order, index) => ({
+        key: order.id || index,
+        orderId: order.id || `ORD-${index + 1}`,
+        customer: order.customer_name || order.customer_id || 'Unknown Customer',
+        date: order.order_date || order.created_at || new Date().toLocaleDateString('id-ID'),
+        items: order.quantity || 1,
+        total: order.total_price || 0,
+        status: order.status || 'Pending',
+        address: order.shipping_address || 'No address provided',
+        // Keep original data for reference
+        product_id: order.product_id,
+        customer_id: order.customer_id,
+        quantity: order.quantity,
+        total_price: order.total_price,
+        size_type: order.size_type,
+        // Add any other fields from your GraphQL response
+        ...order
+      }));
+      setOrders(formattedOrders);
+      setFilteredOrders(formattedOrders);
+    }
+  }, [data]);
 
   const [filteredOrders, setFilteredOrders] = useState(orders);
   const [isModalVisible, setIsModalVisible] = useState(false);

@@ -302,6 +302,7 @@ const AdminPage = () => {
   const handleAddSizeSubmit = async () => {
     try {
       const values = await sizeForm.validateFields();
+      console.log('Adding size for product:', currentProductId);
       await addSize({
         variables: {
           product_id: currentProductId,
@@ -309,9 +310,9 @@ const AdminPage = () => {
           stock_amount: values.stock_amount
         }
       });
+      await fetchAllProductSizes([currentProductId]);
       message.success('Size added successfully');
       setIsAddSizeModalVisible(false);
-      fetchAllProductSizes([currentProductId]);
     } catch (err) {
       message.error(`Failed to add size: ${err.message}`);
     }
@@ -479,7 +480,7 @@ const AdminPage = () => {
             <InputNumber min={0} max={100} style={{ width: '100%' }} />
           </Form.Item>
 
-          <Form.Item 
+          {/* <Form.Item 
             name="total_stock" 
             label="Total Stock" 
             rules={[{ required: true, message: 'Please input total stock' }]}
@@ -493,7 +494,7 @@ const AdminPage = () => {
             rules={[{ required: false }]}
           >
             <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
+          </Form.Item> */}
 
           <Form.Item 
             name="description" 
