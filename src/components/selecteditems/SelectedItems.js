@@ -1,16 +1,36 @@
-// src/components/selecteditems/SelectedItems.js
 import React from 'react';
 import './SelectedItems.css';
+import { useMutation } from "@apollo/client";
+import { REMOVE_FROM_CART } from "../../graphql/mutations";
+import { FaTimes } from "react-icons/fa";
 
-const SelectedItems = () => {
+const SelectedItems = ({ item, onRemove }) => {
+  const [removeFromCart] = useMutation(REMOVE_FROM_CART, {
+    variables: { ShoppingCartID: item.ShoppingCartID },
+    onCompleted: () => {
+      if (onRemove) onRemove(item.ShoppingCartID);
+    },
+    onError: (err) => {
+      console.error("Failed to remove item from cart:", err.message);
+    }
+  });
+
+  const handleDelete = () => {
+    removeFromCart();
+  };
+
   return (
     <div className="selected-item">
-      <div className="item-image"></div>
-      <div className="item-details">
-        <strong>White Collared Shirt</strong>
-        <p>Price: Rp 200.000</p>
-        <p>Size: XL</p>
-        <p>Quantity: <span>1</span></p>
+      <button className="remove-item-btn" onClick={handleDelete} title="Remove from cart">
+        <FaTimes />
+      </button>
+      <img src={item.imagePath} alt={item.product_name} className="item-image" />
+      <div className="item-info">
+        <h4 className="item-name">{item.product_name}</h4>
+        <p className="item-brand">{item.brand}</p>
+        <p className="item-size">Size: {item.size_type || "N/A"}</p>
+        <p className="item-qty">Quantity: {item.quantity}</p>
+        <p className="item-price">Rp {item.price?.toLocaleString("id-ID")}</p>
       </div>
     </div>
   );

@@ -95,3 +95,31 @@ export const ADD_PRODUCT_TO_CART = gql`
     }
   }
 `;
+
+export const GET_SHOPPINGCART_BY_CUSTOMER_ID = gql`
+  query {
+    getShoppingcartBycustomerId {
+      product_id
+      product_name
+      quantity
+      total_price
+      size_type   
+    }
+  }
+`;
+
+export const REMOVE_FROM_CART = gql`
+  mutation removeProductfromCart($ShoppingCartID: String!) {
+    removeProductfromCart(ShoppingCartID: $ShoppingCartID)
+  }
+`;
+
+export const CREATE_ORDER = gql`
+  mutation createOrder($product_id: String!, $quantity: Int!, $size_type: String!) {
+    createOrder(product_id: $product_id, quantity: $quantity, size_type: $size_type) {
+      product_id
+      quantity
+      total_price
+    }
+  }
+`;
