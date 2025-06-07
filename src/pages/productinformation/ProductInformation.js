@@ -1,22 +1,33 @@
-import React, { useEffect, useState, useContext, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
-import { GET_PRODUCT_BY_ID, GET_PRODUCT_SIZE_STOCK } from "../../graphql/mutations";
-import { useQuery, useLazyQuery } from "@apollo/client";
+import {
+  GET_PRODUCT_BY_ID,
+  GET_PRODUCT_SIZE_STOCK,
+  ADD_TO_WISHLIST,
+  GET_WISHLIST_BY_CUSTOMER_ID,
+  REMOVE_FROM_WISHLIST,
+  ADD_PRODUCT_TO_CART,
+} from "../../graphql/mutations";
+import { useQuery, useLazyQuery, useMutation } from "@apollo/client";
 import { FaHeart, FaRegHeart, FaShoppingBag } from "react-icons/fa";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "./ProductInformation.css";
 
 const sizeOptions = ["S", "M", "L", "XL", "XXL"];
 
 const ProductInformation = () => {
   const { id } = useParams();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [product, setProduct] = useState(null);
   const [activeTooltip, setActiveTooltip] = useState(null);
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [wishlistId, setWishlistId] = useState(null);
   const [flyingItems, setFlyingItems] = useState([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedSize, setSelectedSize] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const [sizeStock, setSizeStock] = useState({});
   const [stockLoading, setStockLoading] = useState(true);
   const headerBagRef = useRef(null);
@@ -26,11 +37,54 @@ const ProductInformation = () => {
     variables: { id: `${id}` },
   });
 
-  const [fetchStock] = useLazyQuery(GET_PRODUCT_SIZE_STOCK, {
+  const [fetchStock] = useLazyQuery(GET_PRODUCT_SIZE_STOCK);
+  const [fetchWishlist] = useLazyQuery(GET_WISHLIST_BY_CUSTOMER_ID, {
     onCompleted: (res) => {
-      // not used in bulk load anymore
+      const wishlist = res?.getWishListByCustomerId || [];
+      const found = wishlist.find((item) => item.product_id === id);
+      setIsWishlisted(!!found);
+      setWishlistId(found?.id || null);
+    },
+    onError: (err) => {
+      console.error("Wishlist fetch error:", err.message);
+    },
+    fetchPolicy: "network-only",
+  });
+
+  const [addToWishListMutation] = useMutation(ADD_TO_WISHLIST, {
+    onError: (err) => {
+      console.error("Wishlist mutation error:", err.message);
+      toast.error("Failed to add to wishlist");
     },
   });
+
+  const [removeFromWishListMutation] = useMutation(REMOVE_FROM_WISHLIST, {
+    onCompleted: () => {
+      setIsWishlisted(false);
+      setWishlistId(null);
+      toast.success("Removed from wishlist!");
+    },
+    onError: (err) => {
+      console.error("Wishlist removal error:", err.message);
+      toast.error("Failed to remove from wishlist");
+    },
+  });
+
+  const [addToCartMutation] = useMutation(ADD_PRODUCT_TO_CART, {
+    onCompleted: () => {
+      toast.success("Added to cart!");
+    },
+    onError: (err) => {
+      console.error("Add to cart error:", err.message);
+      toast.error("Failed to add to cart");
+    },
+  });
+
+  useEffect(() => {
+    if (user?.token && id) {
+      fetchWishlist();
+    }
+  }, [user?.token, id]);
 
   useEffect(() => {
     if (data?.getProductbyId) {
@@ -52,12 +106,10 @@ const ProductInformation = () => {
     }
   }, [data]);
 
-  // Fetch all size stocks when product is ready
   useEffect(() => {
     const fetchAllSizes = async () => {
       if (!product) return;
       setStockLoading(true);
-
       const stockResults = {};
       const promises = sizeOptions.map((size) =>
         fetchStock({ variables: { product_id: product.id, size_type: size } })
@@ -69,12 +121,10 @@ const ProductInformation = () => {
             stockResults[size] = 0;
           })
       );
-
       await Promise.all(promises);
       setSizeStock(stockResults);
       setStockLoading(false);
     };
-
     fetchAllSizes();
   }, [product]);
 
@@ -84,29 +134,42 @@ const ProductInformation = () => {
       setTimeout(() => setActiveTooltip(null), 2000);
       return;
     }
-
     if (!selectedSize) {
       setActiveTooltip("size");
       setTimeout(() => setActiveTooltip(null), 2000);
       return;
     }
+    if (quantity > Math.min(10, sizeStock[selectedSize] ?? 0)) {
+      toast.error("Requested quantity exceeds available stock");
+      return;
+    }
+    addToCartMutation({
+      variables: {
+        product_id: id,
+        quantity: quantity,
+        size_type: selectedSize,
+      },
+    });
 
     const buttonRect = addToCartButtonRef.current.getBoundingClientRect();
     const startX = buttonRect.left + buttonRect.width / 2;
     const startY = buttonRect.top + buttonRect.height / 2;
-
-    const newItem = {
-      id: Date.now(),
-      x: startX,
-      y: startY,
-      progress: 0,
-    };
+    const newItem = { id: Date.now(), x: startX, y: startY, progress: 0 };
     setFlyingItems([...flyingItems, newItem]);
-
-    setTimeout(() => {
-      alert(`Added ${product.name} (Size: ${selectedSize}) to cart`);
-    }, 1000);
   };
+
+  const handleQuantityChange = (value) => {
+    const num = parseInt(value);
+    const maxQty = Math.min(10, sizeStock[selectedSize] ?? 10);
+    if (!isNaN(num) && num >= 1 && num <= maxQty) setQuantity(num);
+  };
+
+  const increaseQuantity = () => {
+    const maxQty = Math.min(10, sizeStock[selectedSize] ?? 10);
+    setQuantity((prev) => (prev < maxQty ? prev + 1 : prev));
+  };
+
+  const decreaseQuantity = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   const handleWishlistClick = () => {
     if (!user) {
@@ -114,7 +177,20 @@ const ProductInformation = () => {
       setTimeout(() => setActiveTooltip(null), 2000);
       return;
     }
-    setIsWishlisted(!isWishlisted);
+    if (!isWishlisted) {
+      addToWishListMutation({
+        variables: { product_id: id },
+        onCompleted: () => {
+          setIsWishlisted(true);
+          toast.success("Added to wishlist!");
+          fetchWishlist();
+        },
+      });
+    } else {
+      if (wishlistId) {
+        removeFromWishListMutation({ variables: { wishlist_id: wishlistId } });
+      }
+    }
   };
 
   const handleAddToCartHover = () => {
@@ -135,23 +211,18 @@ const ProductInformation = () => {
 
   useEffect(() => {
     if (flyingItems.length === 0) return;
-
     const animationFrame = requestAnimationFrame(() => {
       setFlyingItems((prevItems) => {
         if (prevItems.length === 0) return [];
-
         const bagPosition = headerBagRef.current?.getBoundingClientRect();
         if (!bagPosition) return prevItems;
-
         return prevItems
           .map((item) => {
             const progress = Math.min(1, (item.progress || 0) + 0.05);
             const easeOutCubic = (t) => (--t) * t * t + 1;
             const currentProgress = easeOutCubic(progress);
-
             const endX = bagPosition.left + bagPosition.width / 2;
             const endY = bagPosition.top + bagPosition.height / 2;
-
             return {
               ...item,
               x: item.x + (endX - item.x) * currentProgress,
@@ -164,11 +235,19 @@ const ProductInformation = () => {
           .filter((item) => item.progress < 1);
       });
     });
-
     return () => cancelAnimationFrame(animationFrame);
   }, [flyingItems]);
 
-  if (loading) return <div className="loading">Loading...</div>;
+  useEffect(() => {
+    if (user) {
+      console.log("User ID:", user.id);
+      console.log("User Token:", user.token);
+    } else {
+      console.log("No user logged in");
+    }
+  }, [user]);
+
+  if (loading || authLoading) return <div className="loading">Loading...</div>;
   if (error) return <div>Error loading product</div>;
   if (!product) return <div className="not-found">Product not found</div>;
 
@@ -220,9 +299,9 @@ const ProductInformation = () => {
             onMouseLeave={() => setActiveTooltip(null)}
           >
             {isWishlisted ? (
-              <FaHeart className="heart-icon filled" />
+              <FaHeart className="heart-icon filled animate-heart" style={{ color: "red" }} />
             ) : (
-              <FaRegHeart className="heart-icon" />
+              <FaRegHeart className="heart-icon animate-heart" />
             )}
             {activeTooltip === "wishlist-login" && (
               <div className="wishlist-tooltip">Please log in to add to wishlist</div>
@@ -257,6 +336,22 @@ const ProductInformation = () => {
               </p>
             </>
           )}
+        </div>
+
+        <div className="quantity-selector">
+          <h3>Quantity</h3>
+          <div className="qty-controls">
+            <button className="qty-btn" onClick={decreaseQuantity}>-</button>
+            <input
+              type="number"
+              className="qty-input"
+              value={quantity}
+              onChange={(e) => handleQuantityChange(e.target.value)}
+              min={1}
+              max={Math.min(10, sizeStock[selectedSize] ?? 10)}
+            />
+            <button className="qty-btn" onClick={increaseQuantity}>+</button>
+          </div>
         </div>
 
         <button

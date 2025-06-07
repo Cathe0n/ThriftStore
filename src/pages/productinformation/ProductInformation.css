@@ -294,3 +294,36 @@
     transform: translateX(-50%);
   }
 }
+
+.quantity-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.qty-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.qty-btn {
+  padding: 0.5rem 1rem;
+  font-size: 1.2rem;
+  border: 1px solid #ccc;
+  background-color: #f5f5f5;
+  cursor: pointer;
+}
+
+.qty-btn:hover {
+  background-color: #e0e0e0;
+}
+
+.qty-input {
+  width: 60px;
+  text-align: center;
+  font-size: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+}

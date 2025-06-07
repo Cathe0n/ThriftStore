@@ -9,11 +9,12 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check for token on initial load
     const token = localStorage.getItem('token');
     if (token && isTokenValid(token)) {
       const decoded = jwtDecode(token);
       setUser({ token, ...decoded });
+    } else {
+      localStorage.removeItem('token'); // remove expired/invalid tokens
     }
     setLoading(false);
   }, []);
@@ -23,7 +24,7 @@ export const AuthProvider = ({ children }) => {
       const decoded = jwtDecode(token);
       const currentTime = Date.now() / 1000;
       return decoded.exp > currentTime;
-    } catch (error) {
+    } catch {
       return false;
     }
   };
