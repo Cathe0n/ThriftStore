@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useMutation, useQuery } from "@apollo/client";
-import { Table, Button, Modal, Form, Input, Select, InputNumber, message, Card } from 'antd';
+import { useMutation, useQuery, useLazyQuery } from "@apollo/client";
+import { Table, Button, Modal, Form, Input, Select, InputNumber, message, Card,Tag, Popover } from 'antd';
 import { EditOutlined, PlusOutlined, FilterOutlined, DeleteOutlined } from '@ant-design/icons';
 import AdminHeader from '../../components/header/AdminHeader';
 import './Adminpage.css';
@@ -9,12 +9,13 @@ import { ADMIN_CREATE_PRODUCT } from '../../graphql/adminMutations';
 import { ADMIN_UPDATE_PRODUCT } from '../../graphql/adminMutations';
 import { ADMIN_DELETE_PRODUCT } from '../../graphql/adminMutations';
 import { ADMIN_ADD_SIZE } from '../../graphql/adminMutations';
-import { ADMIN_UPDATE_SIZE_STOCK } from '../../graphql/adminMutations';
+import { ADMIN_VIEW_SIZES_BY_PRODUCT_ID } from '../../graphql/adminMutations';
 
 const { Option } = Select;
 
 const AdminPage = () => {
   const { data, loading, error } = useQuery(GET_ALL_PRODUCTS);
+  const [getProductSizes] = useLazyQuery(ADMIN_VIEW_SIZES_BY_PRODUCT_ID);
   const [createProduct, { loading: loadingCreate }] = useMutation(ADMIN_CREATE_PRODUCT, {
     refetchQueries: [{ query: GET_ALL_PRODUCTS }],
     awaitRefetchQueries: true,
@@ -31,22 +32,38 @@ const AdminPage = () => {
     refetchQueries: [{ query: GET_ALL_PRODUCTS }],
     awaitRefetchQueries: true,
   });
-  const [updateSizeStock] = useMutation(ADMIN_UPDATE_SIZE_STOCK, {
-    refetchQueries: [{ query: GET_ALL_PRODUCTS }],
-    awaitRefetchQueries: true,
-  });
   
   const [products, setProducts] = useState([]);
+  const [productSizes, setProductSizes] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
   const [isAddSizeModalVisible, setIsAddSizeModalVisible] = useState(false);
-  const [isUpdateSizeModalVisible, setIsUpdateSizeModalVisible] = useState(false);
   const [currentProductId, setCurrentProductId] = useState(null);
   const [form] = Form.useForm();
   const [sizeForm] = Form.useForm();
 
+  const fetchAllProductSizes = async (productIds) => {
+    const sizesData = {};
+    
+    for (const productId of productIds) {
+      try {
+        const { data: sizeData } = await getProductSizes({
+          variables: { product_id: productId }
+        });
+        
+        if (sizeData?.getProductsizes) {
+          sizesData[productId] = sizeData.getProductsizes;
+        }
+      } catch (error) {
+        console.error(`Error fetching sizes for product ${productId}:`, error);
+        sizesData[productId] = [];
+      }
+    }
+    
+    setProductSizes(sizesData);
+  };
   useEffect(() => {
     if (data?.getAllProducts) {
       const formattedProducts = data.getAllProducts.map((p, index) => ({
@@ -64,8 +81,44 @@ const AdminPage = () => {
         description: p.description,
       }));
       setProducts(formattedProducts);
+      const productIds = formattedProducts.map(p => p.product_id);
+      fetchAllProductSizes(productIds);
     }
   }, [data]);
+
+  const SizesDisplay = ({ productId }) => {
+    const sizes = productSizes[productId] || [];
+    
+    if (sizes.length === 0) {
+      return <Tag color="default">No sizes</Tag>;
+    }
+
+    const content = (
+      <div style={{ maxWidth: '200px' }}>
+        {sizes.map((size, index) => (
+          <div key={index} style={{ marginBottom: '4px' }}>
+            <Tag color="blue">{size.size_type}</Tag>
+            <span>Stock: {size.stock_amount}</span>
+          </div>
+        ))}
+      </div>
+    );
+
+    return (
+      <Popover content={content} title="Available Sizes" trigger="hover">
+        <div style={{ cursor: 'pointer' }}>
+          {sizes.slice(0, 3).map((size, index) => (
+            <Tag key={index} color="blue" style={{ marginBottom: '2px' }}>
+              {size.size_type}
+            </Tag>
+          ))}
+          {sizes.length > 3 && (
+            <Tag color="default">+{sizes.length - 3} more</Tag>
+          )}
+        </div>
+      </Popover>
+    );
+  };
 
   const columns = [
     {
@@ -108,6 +161,14 @@ const AdminPage = () => {
       render: (rate) => `${rate}%`,
     },
     {
+      title: 'Available Sizes',
+      key: 'sizes',
+      width: 150,
+      render: (_, record) => (
+        <SizesDisplay productId={record.product_id} />
+      ),
+    },
+    {
       title: 'Total Stock',
       dataIndex: 'total_stock',
       key: 'total_stock',
@@ -129,7 +190,7 @@ const AdminPage = () => {
     {
       title: 'Actions',
       key: 'actions',
-      width: 260,
+      width: 220,
       fixed: 'right',
       render: (_, record) => (
         <div className="table-actions">
@@ -155,13 +216,6 @@ const AdminPage = () => {
             style={{ color: '#1890ff' }}
           >
             Add Size
-          </Button>
-          <Button 
-            type="link" 
-            onClick={() => handleUpdateSizeStock(record.product_id)}
-            style={{ color: '#52c41a' }}
-          >
-            Update Stock
           </Button>
         </div>
       ),
@@ -202,12 +256,7 @@ const AdminPage = () => {
     setIsAddSizeModalVisible(true);
   };
 
-  const handleUpdateSizeStock = (productId) => {
-    setCurrentProductId(productId);
-    sizeForm.resetFields();
-    setIsUpdateSizeModalVisible(true);
-  };
-
+  
   const handleSubmit = () => {
     form.validateFields().then(async values => {
       try {
@@ -262,27 +311,12 @@ const AdminPage = () => {
       });
       message.success('Size added successfully');
       setIsAddSizeModalVisible(false);
+      fetchAllProductSizes([currentProductId]);
     } catch (err) {
       message.error(`Failed to add size: ${err.message}`);
     }
   };
 
-  const handleUpdateSizeStockSubmit = async () => {
-    try {
-      const values = await sizeForm.validateFields();
-      await updateSizeStock({
-        variables: {
-          product_id: currentProductId,
-          size_type: values.size_type,
-          stock_amount: values.stock_amount
-        }
-      });
-      message.success('Size stock updated successfully');
-      setIsUpdateSizeModalVisible(false);
-    } catch (err) {
-      message.error(`Failed to update size stock: ${err.message}`);
-    }
-  };
 
   if (loading) return <p>Loading products...</p>;
   if (error) return <p>Error loading products: ${error.message}</p>;
@@ -317,8 +351,8 @@ const AdminPage = () => {
 
         <Card className="products-card">
           <h2 className="section-title">
-            <span>Current Products</span>
-            <span className="product-count">{products.length} items</span>
+            <span>Current Available Products </span>
+            <span className="product-count"> {" ("}{products.length} items{")"}</span>
           </h2>
           <div className="products-table-container">
             <Table
@@ -513,41 +547,6 @@ const AdminPage = () => {
         </Form>
       </Modal>
 
-      {/* Update Size Stock Modal */}
-      <Modal
-        title="Update Size Stock"
-        visible={isUpdateSizeModalVisible}
-        onOk={handleUpdateSizeStockSubmit}
-        onCancel={() => setIsUpdateSizeModalVisible(false)}
-        okText="Update"
-        cancelText="Cancel"
-      >
-        <Form form={sizeForm} layout="vertical">
-          <Form.Item 
-            name="size_type" 
-            label="Size Type" 
-            rules={[{ required: true, message: 'Please select size type' }]}
-          >
-            <Select placeholder="Select size">
-              <Option value="XS">XS</Option>
-              <Option value="S">S</Option>
-              <Option value="M">M</Option>
-              <Option value="L">L</Option>
-              <Option value="XL">XL</Option>
-              <Option value="XXL">XXL</Option>
-              <Option value="XXXL">XXXL</Option>
-            </Select>
-          </Form.Item>
-
-          <Form.Item 
-            name="stock_amount" 
-            label="New Stock Amount" 
-            rules={[{ required: true, message: 'Please input stock amount' }]}
-          >
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
-        </Form>
-      </Modal>
     </div>
   );
 };
