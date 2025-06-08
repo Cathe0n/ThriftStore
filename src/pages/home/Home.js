@@ -1,14 +1,17 @@
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./Home.css";
 import VeroVideo from "../../assets/VeroVideo.mp4";
-import { FaPlay, FaPause } from "react-icons/fa";
+import { FaPlay, FaPause, FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import HorizontalSlider from "../../components/horizontalslider/HorizontalSlider";
-import SpecialSlider from "../../components/specialslider/SpecialSlider";
+import ProductDisplay from "../../components/productdisplay/ProductDisplay";
+import { useQuery } from "@apollo/client";
+import { GET_TRENDING_PRODUCTS } from "../../graphql/mutations";
 import ChatBot from "../../components/popups/chatbot/ChatBot";
 
 function Home() {
   const videoRef = useRef(null);
+  const trendingRef = useRef(null);
   const [isPlaying, setIsPlaying] = useState(true);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const location = useLocation();
@@ -23,7 +26,8 @@ function Home() {
 
   const gender = currentGender();
 
-  // Dynamic category list based on gender
+  const { loading: trendingLoading, data: trendingData } = useQuery(GET_TRENDING_PRODUCTS);
+
   const categoriesByGender = {
     Women: [
       { name: "Tops", image: "/categories/women/tops.jpg", value: "Tops" },
@@ -53,64 +57,28 @@ function Home() {
 
   const categories = categoriesByGender[gender] || [];
 
-const brands = [
-  { 
-    name: 'Adidas', 
-    image: '/brands/adidas.webp', 
-    value: 'Adidas' 
-  },
-  { 
-    name: 'Nike', 
-    image: '/brands/nike.jpg', 
-    value: 'Nike' 
-  },
-  { 
-    name: 'Loro Piana', 
-    image: '/brands/loro.jpg', 
-    value: 'Loro Piana' 
-  },
-  { 
-    name: 'Louis Vuitton', 
-    image: '/brands/lv.jpg', 
-    value: 'Louis Vuitton' 
-  },
-  { 
-    name: 'H&M', 
-    image: '/brands/hm.jpg', 
-    value: 'H&M' 
-  },
-];
-
-  const trending = [
-    {
-      image: "/images/women/Tops/Bershka/Dries/dries.jpg",
-      name: "embellished crepe bustier top",
-      brand: "Dries Van Noten",
-      price: 889000
-    },
-    {
-      image: "/categories/women/burberry.webp",
-      name: "cropped trench jacket",
-      brand: "Burberry",
-      price: 23599000
-    },
+  const brands = [
+    { name: "Adidas", image: "/brands/adidas.webp", value: "Adidas" },
+    { name: "Nike", image: "/brands/nike.jpg", value: "Nike" },
+    { name: "Loro Piana", image: "/brands/loro.jpg", value: "Loro Piana" },
+    { name: "Louis Vuitton", image: "/brands/lv.jpg", value: "Louis Vuitton" },
+    { name: "H&M", image: "/brands/hm.jpg", value: "H&M" },
   ];
 
-  const handleCategoryClick = async (category) => {
+  const handleCategoryClick = (category) => {
     const categoryType = `${gender}'s ${category.value}`;
-
     navigate("/product", {
       state: {
         categoryType,
         category: `${gender}'s ${category.name}`,
-        gender
-      }
+        gender,
+      },
     });
   };
 
-const handleBrandClick = async (brands) => {
-    navigate("/product", { state: { brand: brands.value } });
-};
+  const handleBrandClick = (brand) => {
+    navigate("/product", { state: { brand: brand.value } });
+  };
 
   const togglePlayback = () => {
     if (videoRef.current) {
@@ -125,6 +93,24 @@ const handleBrandClick = async (brands) => {
 
   const handleSeeAllBrands = () => {
     navigate("/brands");
+  };
+
+  const trendingProducts =
+    trendingData?.getTrendingProducts?.map((product) => ({
+      ...product,
+      images: product.imagePath
+        ? product.imagePath.split(",").map((url) => url.trim()).filter(Boolean)
+        : [],
+    })) || [];
+
+  const scrollTrending = (direction) => {
+    const scrollAmount = 300;
+    if (trendingRef.current) {
+      trendingRef.current.scrollBy({
+        left: direction === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
   };
 
   return (
@@ -148,7 +134,6 @@ const handleBrandClick = async (brands) => {
         <p>Please log in to access exclusive deals.</p>
       </div>
 
-      {/* Shop By Category*/}
       <HorizontalSlider
         title="Shop By Category"
         items={categories}
@@ -157,7 +142,6 @@ const handleBrandClick = async (brands) => {
         loading={loadingCategories}
       />
 
-      {/* Shop By Brands */}
       <HorizontalSlider
         title="Shop By Brands"
         items={brands}
@@ -166,14 +150,35 @@ const handleBrandClick = async (brands) => {
         bgColor="#f8f8f8"
       />
 
-      {/* Trending Products */}
-      <SpecialSlider
-        title="Trending Pieces"
-        subtitle="What's hot right now"
-        items={trending}
-        themeColor="#9A4949"
-        titleColor="white"
-      />
+      <div className="trending-section" style={{ backgroundColor: "#9A4949", padding: "2rem 1rem" }}>
+        <h2 style={{ color: "white", textAlign: "center" }}>Trending Pieces</h2>
+        <p style={{ color: "white", textAlign: "center", marginBottom: "2rem" }}>
+          What's hot right now
+        </p>
+        {trendingLoading ? (
+          <p style={{ color: "white", textAlign: "center" }}>Loading...</p>
+        ) : (
+          <div className="trending-slider-container">
+            <button className="slider-arrow left" onClick={() => scrollTrending("left")}>
+              <FaChevronLeft />
+            </button>
+
+            <div className="trending-slider-wrapper" ref={trendingRef}>
+              <div className="trending-slider">
+                {trendingProducts.map((product) => (
+                  <div key={product.id} className="trending-slide">
+                    <ProductDisplay product={product} />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button className="slider-arrow right" onClick={() => scrollTrending("right")}>
+              <FaChevronRight />
+            </button>
+          </div>
+        )}
+      </div>
 
       <ChatBot />
     </div>
