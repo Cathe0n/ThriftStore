@@ -148,3 +148,27 @@ export const GET_TRENDING_PRODUCTS = gql`
     }
   }
 `;
+
+export const GET_DISCOUNTED_PRODUCTS = gql`
+  query {
+    getDiscountedProducts {
+      id
+      product_name
+      price
+      discount_rate
+      imagePath
+    }
+  }
+`;
+
+export const GET_LOW_STOCK_PRODUCTS = gql`
+  query GetLowStockProducts {
+    getLowStockProducts {
+      _id
+      name
+      price
+      image
+      quantity
+    }
+  }
+`;

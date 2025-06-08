@@ -158,3 +158,149 @@
     max-width: 80%;
   }
 }
+
+/* Sale Section */
+.sale-section {
+  background-color: white;
+  padding: 2rem 1rem;
+}
+
+.sale-section h2,
+.sale-section p {
+  color: black;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.sale-slider-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  padding: 0 3rem;
+}
+
+.sale-slider-wrapper {
+  overflow: hidden;
+  width: 100%;
+}
+
+.sale-slider {
+  display: flex;
+  gap: 1rem;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  padding: 0.5rem 0;
+}
+
+.sale-slide {
+  flex: 0 0 25%;
+  max-width: 25%;
+  scroll-snap-align: start;
+}
+
+/* Hide Scrollbar */
+.sale-slider-wrapper::-webkit-scrollbar {
+  display: none;
+}
+.sale-slider-wrapper {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .sale-slide {
+    flex: 0 0 33.33%;
+    max-width: 33.33%;
+  }
+}
+@media (max-width: 768px) {
+  .sale-slide {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+  .sale-slider-container {
+    padding: 0 1rem;
+  }
+}
+@media (max-width: 500px) {
+  .sale-slide {
+    flex: 0 0 80%;
+    max-width: 80%;
+  }
+}
+
+/* Limited Stock Section */
+.limited-stock-section {
+  background-color: #95D2D7;
+  padding: 2rem 1rem;
+}
+
+.limited-stock-section h2,
+.limited-stock-section p {
+  color: white;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.limited-stock-slider-container {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  padding: 0 3rem;
+}
+
+.limited-stock-slider-wrapper {
+  overflow: hidden;
+  width: 100%;
+}
+
+.limited-stock-slider {
+  display: flex;
+  gap: 1rem;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  padding: 0.5rem 0;
+}
+
+.limited-stock-slide {
+  flex: 0 0 25%;
+  max-width: 25%;
+  scroll-snap-align: start;
+}
+
+/* Hide Scrollbar */
+.limited-stock-slider-wrapper::-webkit-scrollbar {
+  display: none;
+}
+.limited-stock-slider-wrapper {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .limited-stock-slide {
+    flex: 0 0 33.33%;
+    max-width: 33.33%;
+  }
+}
+@media (max-width: 768px) {
+  .limited-stock-slide {
+    flex: 0 0 50%;
+    max-width: 50%;
+  }
+  .limited-stock-slider-container {
+    padding: 0 1rem;
+  }
+}
+@media (max-width: 500px) {
+  .limited-stock-slide {
+    flex: 0 0 80%;
+    max-width: 80%;
+  }
+}
