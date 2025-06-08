@@ -80,7 +80,8 @@ const ShoppingBag = () => {
             variables: {
               product_id: item.product_id,
               quantity: item.quantity,
-              size_type: item.size_type
+              size_type: item.size_type,
+              location: shippingAddress
             }
           });
           await removeFromCart({ variables: { ShoppingCartID: item.ShoppingCartID } });
