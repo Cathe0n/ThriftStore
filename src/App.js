@@ -22,7 +22,7 @@ import UserTransaction from "./pages/usertransaction/UserTransaction.js";
 
 function AppHeader() {
   const location = useLocation();
-  const noHeaderPaths = ["/adminloginpage", "/adminpage"];
+  const noHeaderPaths = ["/adminloginpage", "/adminpage","/adminorder"];
 
   if (noHeaderPaths.includes(location.pathname)) return null;
   if (location.pathname === "/login-dashboard") return <DashboardLoginHeader />;
