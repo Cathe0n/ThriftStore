@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
 import { useMutation, useQuery, useLazyQuery } from "@apollo/client";
-import { Table, Button, Modal, Form, Input, Select, InputNumber, message, Card,Tag, Popover } from 'antd';
+import { Table, Button, Modal, Form, Input, Select, InputNumber, message, Card, Tag, Popover } from 'antd';
 import { EditOutlined, PlusOutlined, FilterOutlined, DeleteOutlined } from '@ant-design/icons';
 import AdminHeader from '../../components/header/AdminHeader';
 import './Adminpage.css';
@@ -10,12 +10,13 @@ import { ADMIN_UPDATE_PRODUCT } from '../../graphql/adminMutations';
 import { ADMIN_DELETE_PRODUCT } from '../../graphql/adminMutations';
 import { ADMIN_ADD_SIZE } from '../../graphql/adminMutations';
 import { ADMIN_VIEW_SIZES_BY_PRODUCT_ID } from '../../graphql/adminMutations';
+import ProductFilter from './ProductFilter'; // <<< NEW IMPORT (adjust path if needed)
 
 const { Option } = Select;
 
 const AdminPage = () => {
   const { data, loading, error } = useQuery(GET_ALL_PRODUCTS);
-  const [getProductSizes] = useLazyQuery(ADMIN_VIEW_SIZES_BY_PRODUCT_ID);
+  const [getProductSizes, { loading: loadingSizes }] = useLazyQuery(ADMIN_VIEW_SIZES_BY_PRODUCT_ID); // Added loading state for sizes
   const [createProduct, { loading: loadingCreate }] = useMutation(ADMIN_CREATE_PRODUCT, {
     refetchQueries: [{ query: GET_ALL_PRODUCTS }],
     awaitRefetchQueries: true,
@@ -29,8 +30,6 @@ const AdminPage = () => {
     awaitRefetchQueries: true,
   });
   const [addSize] = useMutation(ADMIN_ADD_SIZE, {
-    refetchQueries: [{ query: GET_ALL_PRODUCTS }],
-    awaitRefetchQueries: true,
   });
   
   const [products, setProducts] = useState([]);
@@ -44,29 +43,44 @@ const AdminPage = () => {
   const [form] = Form.useForm();
   const [sizeForm] = Form.useForm();
 
-  const fetchAllProductSizes = async (productIds) => {
-    const sizesData = {};
-    
-    for (const productId of productIds) {
-      try {
-        const { data: sizeData } = await getProductSizes({
-          variables: { product_id: productId }
-        });
-        
-        if (sizeData?.getProductsizes) {
-          sizesData[productId] = sizeData.getProductsizes;
-        }
-      } catch (error) {
-        console.error(`Error fetching sizes for product ${productId}:`, error);
-        sizesData[productId] = [];
-      }
+  // <<< NEW STATE FOR PRODUCT FILTERS >>>
+  const [activeProductFilters, setActiveProductFilters] = useState({});
+
+  const fetchProductSizesByIds = useCallback(async (productIdsToFetch) => {
+    if (!productIdsToFetch || productIdsToFetch.length === 0) {
+        return;
     }
-    
-    setProductSizes(sizesData);
-  };
+    // Fetch only for IDs not already in productSizes or if forced
+    const newSizesData = { ...productSizes };
+    let fetchedNewData = false;
+
+    for (const productId of productIdsToFetch) {
+        // Optionally, only fetch if not already present or needs refresh
+        // if (newSizesData[productId] && !forceRefresh) continue; 
+        try {
+            const { data: sizeData } = await getProductSizes({
+            variables: { product_id: productId }
+            });
+            if (sizeData?.getProductsizes) {
+            newSizesData[productId] = sizeData.getProductsizes;
+            fetchedNewData = true;
+            } else {
+            newSizesData[productId] = []; // Ensure it's an array even if no data
+            }
+        } catch (err) {
+            console.error(`Error fetching sizes for product ${productId}:`, err);
+            newSizesData[productId] = []; // Default to empty array on error
+        }
+    }
+    if (fetchedNewData) {
+        setProductSizes(newSizesData);
+    }
+  }, [getProductSizes, productSizes]); // Added productSizes to dependencies of useCallback
+
+
   useEffect(() => {
     if (data?.getAllProducts) {
-      const formattedProducts = data.getAllProducts.map((p, index) => ({
+      let initialFormattedProducts = data.getAllProducts.map((p) => ({
         key: p.id,
         product_id: p.id,
         product_name: p.product_name,
@@ -80,11 +94,50 @@ const AdminPage = () => {
         brand: p.brand,
         description: p.description,
       }));
-      setProducts(formattedProducts);
-      const productIds = formattedProducts.map(p => p.product_id);
-      fetchAllProductSizes(productIds);
+
+      // <<< APPLY PRODUCT FILTERS >>>
+      let filteredProducts = initialFormattedProducts;
+      if (Object.keys(activeProductFilters).length > 0) {
+        const { categories, genders, minPrice, maxPrice } = activeProductFilters;
+
+        filteredProducts = initialFormattedProducts.filter(product => {
+          let categoryMatch = true;
+          let genderMatch = true;
+          let priceMatch = true;
+
+          if (categories && categories.length > 0) {
+            categoryMatch = categories.includes(product.category_type);
+          }
+
+          if (genders && genders.length > 0) {
+            // Ensure gender comparison is consistent (e.g., both lowercase)
+            genderMatch = genders.includes(product.gender.toLowerCase()); 
+          }
+
+          if (minPrice !== undefined && minPrice !== null) {
+            if (product.price < minPrice) priceMatch = false;
+          }
+          if (maxPrice !== undefined && maxPrice !== null) {
+            if (product.price > maxPrice) priceMatch = false;
+          }
+          
+          return categoryMatch && genderMatch && priceMatch;
+        });
+      }
+      
+      setProducts(filteredProducts);
+      
+      const productIdsToDisplay = filteredProducts.map(p => p.product_id);
+      // Fetch sizes for the products that are currently being displayed (after filtering)
+      // Consider fetching only for new products if performance becomes an issue
+      if (productIdsToDisplay.length > 0) {
+        fetchProductSizesByIds(productIdsToDisplay);
+      }
+    } else {
+        setProducts([]); // Clear products if no data
+        setProductSizes({}); // Clear sizes too
     }
-  }, [data]);
+  }, [data, activeProductFilters, fetchProductSizesByIds]); // <<< ADDED activeProductFilters and fetchProductSizesByIds
 
   const SizesDisplay = ({ productId }) => {
     const sizes = productSizes[productId] || [];
@@ -105,15 +158,15 @@ const AdminPage = () => {
     );
 
     return (
-      <Popover content={content} title="Available Sizes" trigger="hover">
-        <div style={{ cursor: 'pointer' }}>
-          {sizes.slice(0, 3).map((size, index) => (
-            <Tag key={index} color="blue" style={{ marginBottom: '2px' }}>
-              {size.size_type}
+      <Popover content={content} title="Available Sizes & Stock" trigger="hover">
+        <div style={{ cursor: 'pointer', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+          {sizes.slice(0, 2).map((size, index) => ( // Show first 2 tags directly
+            <Tag key={index} color="blue">
+              {size.size_type} ({size.stock_amount})
             </Tag>
           ))}
-          {sizes.length > 3 && (
-            <Tag color="default">+{sizes.length - 3} more</Tag>
+          {sizes.length > 2 && (
+            <Tag color="default">+{sizes.length - 2} more</Tag>
           )}
         </div>
       </Popover>
@@ -161,9 +214,9 @@ const AdminPage = () => {
       render: (rate) => `${rate}%`,
     },
     {
-      title: 'Available Sizes',
+      title: 'Available Sizes', // Changed title slightly
       key: 'sizes',
-      width: 150,
+      width: 180, // Increased width a bit for better display
       render: (_, record) => (
         <SizesDisplay productId={record.product_id} />
       ),
@@ -198,6 +251,7 @@ const AdminPage = () => {
             type="link" 
             icon={<EditOutlined />} 
             onClick={() => handleEdit(record)}
+            style={{ paddingLeft: 0, paddingRight: '8px' }}
           >
             Edit
           </Button>
@@ -206,14 +260,15 @@ const AdminPage = () => {
             icon={<DeleteOutlined />} 
             danger
             onClick={() => handleDelete(record.product_id)}
-            loading={loadingDelete}
+            loading={loadingDelete} // Kept loadingDelete here
+            style={{ paddingLeft: 0, paddingRight: '8px' }}
           >
             Delete
           </Button>
           <Button 
             type="link" 
             onClick={() => handleAddSize(record.product_id)}
-            style={{ color: '#1890ff' }}
+            style={{ color: '#1890ff', paddingLeft: 0, paddingRight: 0 }}
           >
             Add Size
           </Button>
@@ -235,8 +290,6 @@ const AdminPage = () => {
       price: product.price,
       discount_rate: product.discount_rate,
       category_type: product.category_type,
-      sold_amount: product.sold_amount,
-      total_stock: product.total_stock,
       brand: product.brand,
       description: product.description,
       imagePath: product.imagePath,
@@ -255,7 +308,6 @@ const AdminPage = () => {
     sizeForm.resetFields();
     setIsAddSizeModalVisible(true);
   };
-
   
   const handleSubmit = () => {
     form.validateFields().then(async values => {
@@ -302,15 +354,17 @@ const AdminPage = () => {
   const handleAddSizeSubmit = async () => {
     try {
       const values = await sizeForm.validateFields();
-      console.log('Adding size for product:', currentProductId);
       await addSize({
         variables: {
           product_id: currentProductId,
           size_type: values.size_type,
-          stock_amount: values.stock_amount
+          stock_amount: parseInt(values.stock_amount, 10) 
         }
       });
-      await fetchAllProductSizes([currentProductId]);
+ 
+      await fetchProductSizesByIds([currentProductId]);
+
+
       message.success('Size added successfully');
       setIsAddSizeModalVisible(false);
     } catch (err) {
@@ -318,6 +372,10 @@ const AdminPage = () => {
     }
   };
 
+  // <<< NEW HANDLER FOR PRODUCT FILTER CHANGES >>>
+  const handleProductFilterChange = (filters) => {
+    setActiveProductFilters(filters);
+  };
 
   if (loading) return <p>Loading products...</p>;
   if (error) return <p>Error loading products: ${error.message}</p>;
@@ -340,12 +398,8 @@ const AdminPage = () => {
               >
                 Add Product
               </Button>
-              <Button 
-                icon={<FilterOutlined />} 
-                size="large"
-              >
-                Filters
-              </Button>
+              {/* <<< REPLACE OLD FILTER BUTTON WITH ProductFilter COMPONENT >>> */}
+              <ProductFilter onFilterChange={handleProductFilterChange} />
             </div>
           </div>
         </Card>
@@ -360,10 +414,10 @@ const AdminPage = () => {
               className="products-table"
               columns={columns}
               dataSource={products}
-              scroll={{ x: 1500, y: 'calc(100vh - 350px)' }}
-              pagination={false}
+              scroll={{ x: 1500, y: 'calc(100vh - 350px)' }} // Original scroll
+              pagination={{ pageSize: 15, showSizeChanger: true, pageSizeOptions: ['15', '30', '50', '100'] }} // Added pagination
               bordered
-              loading={loading || loadingDelete}
+              loading={loading || loadingDelete || loadingSizes } // Added loadingSizes
             />
           </div>
         </Card>
@@ -377,20 +431,23 @@ const AdminPage = () => {
           try {
             await deleteProduct({ variables: { product_id: productToDelete } });
             message.success('Product deleted successfully');
+            // Optionally remove sizes for deleted product from local state
+            setProductSizes(prevSizes => {
+              const newSizes = {...prevSizes};
+              delete newSizes[productToDelete];
+              return newSizes;
+            });
           } catch (err) {
             message.error(`Failed to delete product: ${err.message}`);
           } finally {
             setIsDeleteModalVisible(false);
+            setProductToDelete(null);
           }
         }}
         onCancel={() => setIsDeleteModalVisible(false)}
-        okType="danger"
+        okButtonProps={{ danger: true, loading: loadingDelete }} // Use loadingDelete from useMutation
         okText="Delete"
         cancelText="Cancel"
-        okButtonProps={{
-          danger: true,
-          type: 'primary',
-        }}
       >
         <p>Are you sure you want to delete this product? This action cannot be undone.</p>
       </Modal>
@@ -405,8 +462,11 @@ const AdminPage = () => {
         okText={editingProduct ? "Update" : "Create"}
         cancelText="Cancel"
         confirmLoading={loadingCreate || loadingUpdate}
+        destroyOnClose // Good practice to reset form state
       >
-        <Form form={form} layout="vertical">
+        <Form form={form} layout="vertical" 
+              initialValues={{ discount_rate: 0 }} // Set initial values for new products
+        >
           <Form.Item 
             name="category_type" 
             label="Category" 
@@ -432,7 +492,8 @@ const AdminPage = () => {
               <Option value="Kids Bottoms">Kids Bottoms</Option>
               <Option value="Kids Activewear">Kids Activewear</Option>
               <Option value="Kids Outerwear">Kids Outerwear</Option>
-              <Option value="Kids Loungewear & Pajamas">Kids Loungewear</Option>
+              {/* Value from your form code: "Kids Loungewear & Pajamas", Label "Kids Loungewear" */}
+              <Option value="Kids Loungewear & Pajamas">Kids Loungewear</Option> 
             </Select>
           </Form.Item>
 
@@ -450,9 +511,9 @@ const AdminPage = () => {
             rules={[{ required: true, message: 'Please select gender' }]}
           >
             <Select placeholder="Select gender">
-              <Option value="female">female</Option>
-              <Option value="male">male</Option>
-              <Option value="unisex">unisex</Option>
+              <Option value="female">Female</Option>
+              <Option value="male">Male</Option>
+              <Option value="unisex">Unisex</Option>
             </Select>
           </Form.Item>
 
@@ -469,32 +530,16 @@ const AdminPage = () => {
             label="Price ($)" 
             rules={[{ required: true, message: 'Please input price' }]}
           >
-            <InputNumber min={0} style={{ width: '100%' }} prefix="$" />
+            <InputNumber min={0} style={{ width: '100%' }} prefix="$" precision={2} />
           </Form.Item>
 
           <Form.Item 
             name="discount_rate" 
             label="Discount Rate (%)" 
-            rules={[{ required: true, message: 'Please input discount rate' }]}
+            rules={[{ required: true, message: 'Please input discount rate (0-100)' }]}
           >
-            <InputNumber min={0} max={100} style={{ width: '100%' }} />
+            <InputNumber min={0} max={100} style={{ width: '100%' }} formatter={value => `${value}%`} parser={value => String(value).replace('%', '')} />
           </Form.Item>
-
-          {/* <Form.Item 
-            name="total_stock" 
-            label="Total Stock" 
-            rules={[{ required: true, message: 'Please input total stock' }]}
-          >
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
-
-          <Form.Item 
-            name="sold_amount" 
-            label="Sold Amount" 
-            rules={[{ required: false }]}
-          >
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item> */}
 
           <Form.Item 
             name="description" 
@@ -507,7 +552,7 @@ const AdminPage = () => {
           <Form.Item 
             name="imagePath" 
             label="Image Path" 
-            rules={[{ required: false }]}
+            rules={[{ required: false }]} // Make required if image is mandatory for new products
           >
             <Input placeholder="URL or file path" />
           </Form.Item>
@@ -522,6 +567,7 @@ const AdminPage = () => {
         onCancel={() => setIsAddSizeModalVisible(false)}
         okText="Add"
         cancelText="Cancel"
+        destroyOnClose
       >
         <Form form={sizeForm} layout="vertical">
           <Form.Item 
@@ -530,11 +576,13 @@ const AdminPage = () => {
             rules={[{ required: true, message: 'Please select size type' }]}
           >
             <Select placeholder="Select size">
+              <Option value="XS">XS</Option> 
               <Option value="S">S</Option>
               <Option value="M">M</Option>
               <Option value="L">L</Option>
               <Option value="XL">XL</Option>
               <Option value="XXL">XXL</Option>
+              <Option value="XXXL">XXXL</Option>
             </Select>
           </Form.Item>
 
@@ -547,7 +595,6 @@ const AdminPage = () => {
           </Form.Item>
         </Form>
       </Modal>
-
     </div>
   );
 };
