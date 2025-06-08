@@ -136,3 +136,15 @@ export const GET_ORDER_BY_CUSTOMER_ID = gql`
     }
   }
 `;
+
+export const GET_TRENDING_PRODUCTS = gql`
+  query GetTrendingProducts {
+    getTrendingProducts {
+      id
+      product_name
+      brand
+      price
+      imagePath
+    }
+  }
+`;
