@@ -128,6 +128,7 @@ const ProductInformation = () => {
     fetchAllSizes();
   }, [product]);
 
+  // Function name should be handleAddToCart but it's work so don't touch it
   const handleOrder = () => {
     if (!user) {
       setActiveTooltip("login");
