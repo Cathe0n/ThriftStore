@@ -20,9 +20,13 @@
   }
   
   .header-right {
-    flex: 1;
-    justify-content: flex-end;
-  }
+  flex: 1;
+  justify-content: flex-end;
+  align-items: center;
+  display: flex;
+  gap: 30px;
+  white-space: nowrap; /* Prevent line wrapping */
+}
   
   .header-center {
     flex: 1;
@@ -36,13 +40,15 @@
   }
   
   /* Link base style */
-  .nav-link {
-    position: relative;
-    text-decoration: none;
-    color: black;
-    font-weight: normal;
-    transition: all 0.2s ease-in-out;
-  }
+.nav-link {
+  position: relative;
+  text-decoration: none;
+  color: black;
+  font-weight: normal;
+  transition: all 0.2s ease-in-out;
+  display: inline-block; /* Ensure inline-block to avoid width expansion */
+  white-space: nowrap;   /* Prevent line breaks inside the link text */
+}
   
   /* Hover underline animation */
   .nav-link::after {
@@ -74,21 +80,66 @@
     display: none;
   }
   
-  .login-button {
-    background: none;
-    border: none;
-    font: inherit;
-    color: inherit;
-    cursor: pointer;
-    padding: 0;
-  }
+.login-button,
+.exit-button {
+  background: none;
+  border: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  white-space: nowrap;   /* Prevent LOG IN/EXIT wrapping */
+}
 
-  .exit-button {
-    background: none;
-    border: none;
-    font: inherit;
-    color: inherit;
-    cursor: pointer;
-    padding: 0;
-  }
-  
+.user-menu-container {
+  position: relative;
+}
+
+.user-icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.user-icon {
+  font-size: 28px;
+  transition: color 0.3s;
+}
+
+.user-logged-in {
+  color: black;
+}
+
+.user-logged-out {
+  color: #ccc;
+}
+
+.user-dropdown {
+  position: absolute;
+  right: 0;
+  top: 40px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0px 4px 8px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  z-index: 1000;
+  min-width: 120px;
+}
+
+.dropdown-item {
+  padding: 10px 16px;
+  background: none;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 14px;
+  transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f2f2f2;
+}

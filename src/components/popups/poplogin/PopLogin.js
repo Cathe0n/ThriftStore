@@ -1,7 +1,7 @@
 // src/components/popups/poplogin/PopLogin.js
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import "./PopLogin.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useMutation } from "@apollo/client";
 import { LOGIN_MUTATION } from "../../../graphql/mutations";
 import { useAuth } from "../../../context/AuthContext";
@@ -13,15 +13,23 @@ function PopLogin({ isOpen, onClose, onSwitchToRegister }) {
   const [error, setError] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const [redirectAfterLogin, setRedirectAfterLogin] = useState("/");
+
+  useEffect(() => {
+    if (isOpen) {
+      setRedirectAfterLogin(location.pathname + location.search);
+    }
+  }, [isOpen, location]);
 
   const [loginMutation, { loading }] = useMutation(LOGIN_MUTATION, {
     onCompleted: (data) => {
       const token = data?.login?.token;
       if (token) {
-        console.log(token)
         login(token);
         onClose();
-        navigate("/women");
+        navigate(redirectAfterLogin);
       } else {
         setError("Login failed. No token received.");
       }

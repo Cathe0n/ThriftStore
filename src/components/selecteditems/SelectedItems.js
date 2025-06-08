@@ -6,7 +6,6 @@ import { FaTimes } from "react-icons/fa";
 
 const SelectedItems = ({ item, onRemove }) => {
   const [removeFromCart] = useMutation(REMOVE_FROM_CART, {
-    variables: { ShoppingCartID: item.ShoppingCartID },
     onCompleted: () => {
       if (onRemove) onRemove(item.ShoppingCartID);
     },
@@ -16,7 +15,14 @@ const SelectedItems = ({ item, onRemove }) => {
   });
 
   const handleDelete = () => {
-    removeFromCart();
+    if (!item.ShoppingCartID) {
+      console.warn("No ShoppingCartID provided");
+      return;
+    }
+
+    removeFromCart({
+      variables: { ShoppingCartID: item.ShoppingCartID }
+    });
   };
 
   return (
