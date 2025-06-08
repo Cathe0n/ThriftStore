@@ -7,13 +7,13 @@ const ProductFilter = ({ onFilterChange }) => {
   const [form] = Form.useForm();
   const [activeFilterCount, setActiveFilterCount] = useState(0);
 
-  // These category names MUST MATCH the <Option value="..."> in AdminPage.js Form.Item for "category_type"
+
   const categoryOptions = [
     "Women's Tops", "Women's Sweaters & Hoodiess", "Women's Bottoms",
     "Women's Activewear", "Women's Dresses & Skirts", "Women's Outerwear",
     "Men's Tops", "Men's Sweaters & Hoodiess", 
     "Men's Bottoms", "Men's Activewear", "Men's Outerwear", "Men's Loungewear",
-    "Kids Tops", "Kids Sweaters & Hoodies", "Kids Bottoms", // Corrected 'Hoodiess' to 'Hoodies' to match majority
+    "Kids Tops", "Kids Sweaters & Hoodies", "Kids Bottoms", // some nigga type hoodiess so uhh
     "Kids Activewear", "Kids Outerwear", "Kids Loungewear & Pajamas"
   ].map(cat => ({ label: cat, value: cat }));
 
@@ -60,7 +60,6 @@ const ProductFilter = ({ onFilterChange }) => {
     form.resetFields();
     onFilterChange({});
     setActiveFilterCount(0);
-    // setVisible(false); // Optional: close modal on clear
   };
 
   const onFormValuesChange = () => {
@@ -105,15 +104,15 @@ const ProductFilter = ({ onFilterChange }) => {
             Apply Filters
           </Button>,
         ]}
-        width={600} // Increased width for better layout of checkboxes
+        width={600} // width stuff because design
       >
         <Form form={form} layout="vertical" onValuesChange={onFormValuesChange}>
           <Divider orientation="left">Category</Divider>
           <Form.Item name="categories">
             <Checkbox.Group style={{ width: '100%' }}>
-              <Row gutter={[8, 8]}> {/* Added gutter for spacing */}
+              <Row gutter={[8, 8]}> {/* Added spacing stuff so it's not eyesore */}
                 {categoryOptions.map(option => (
-                  <Col xs={24} sm={12} md={8} key={option.value}> {/* Responsive columns */}
+                  <Col xs={24} sm={12} md={8} key={option.value}> {/* Responsive columns stuff idk man looks good tho */}
                     <Checkbox value={option.value}>{option.label}</Checkbox>
                   </Col>
                 ))}

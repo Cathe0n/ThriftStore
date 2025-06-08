@@ -48,12 +48,12 @@ const AdminPage = () => {
   const [form] = Form.useForm();
   const [sizeForm] = Form.useForm();
 
-  // <<< NEW STATE FOR PRODUCT FILTERS >>>
+  // PRODUCT FILTER STUFF IDK PLEASE WORK IM GOING TO JUMP
   const [activeProductFilters, setActiveProductFilters] = useState({});
 
   useEffect(() => {
     if (data?.getAllProducts) {
-      let formattedProducts = data.getAllProducts.map((p) => ({ // Removed 'index' as it was unused
+      let formattedProducts = data.getAllProducts.map((p) => ({ 
         key: p.id,
         product_id: p.id,
         product_name: p.product_name,
@@ -68,7 +68,7 @@ const AdminPage = () => {
         description: p.description,
       }));
 
-      // <<< APPLY PRODUCT FILTERS >>>
+      // filtering stuff idk man
       if (Object.keys(activeProductFilters).length > 0) {
         const { categories, genders, minPrice, maxPrice } = activeProductFilters;
 
@@ -82,7 +82,7 @@ const AdminPage = () => {
           }
 
           if (genders && genders.length > 0) {
-            genderMatch = genders.includes(product.gender); // Assumes product.gender is 'female', 'male', or 'unisex'
+            genderMatch = genders.includes(product.gender); //dow e support lgbt idk
           }
 
           if (minPrice !== undefined && minPrice !== null) {
@@ -97,12 +97,11 @@ const AdminPage = () => {
       }
       setProducts(formattedProducts);
     } else {
-        setProducts([]); // Clear products if no data
+        setProducts([]); //clear stuff
     }
-  }, [data, activeProductFilters]); // <<< ADDED activeProductFilters to dependency array
+  }, [data, activeProductFilters]); // the data stuff
 
   const columns = [
-    // ... (your existing columns definition remains unchanged)
     {
       title: 'Category',
       dataIndex: 'category_type',
@@ -258,8 +257,6 @@ const AdminPage = () => {
               imagePath: values.imagePath || '',
               brand: values.brand,
               description: values.description
-              // Note: total_stock and sold_amount are not part of update mutation here
-              // If they are, they need to be added to variables.
             }
           });
           message.success('Product updated successfully');
@@ -274,10 +271,6 @@ const AdminPage = () => {
               imagePath: values.imagePath || '',
               brand: values.brand,
               description: values.description
-              // Note: total_stock and sold_amount are not part of create mutation here
-              // If they are, they need to be added.
-              // Also the form has total_stock and sold_amount fields.
-              // The createProduct mutation in the provided code does not use them in its variables.
             }
           });
           message.success('Product added successfully');
@@ -298,7 +291,7 @@ const AdminPage = () => {
         variables: {
           product_id: currentProductId,
           size_type: values.size_type,
-          stock_amount: values.stock_amount // This should be parsed to int if backend expects int
+          stock_amount: values.stock_amount 
         }
       });
       message.success('Size added successfully');
@@ -315,7 +308,7 @@ const AdminPage = () => {
         variables: {
           product_id: currentProductId,
           size_type: values.size_type,
-          stock_amount: values.stock_amount // This should be parsed to int if backend expects int
+          stock_amount: values.stock_amount 
         }
       });
       message.success('Size stock updated successfully');
@@ -326,7 +319,7 @@ const AdminPage = () => {
     }
   };
 
-  // <<< NEW HANDLER FOR PRODUCT FILTER CHANGES >>>
+  // handler stuff for filter might work idk lmao
   const handleProductFilterChange = (filters) => {
     setActiveProductFilters(filters);
   };
@@ -352,7 +345,7 @@ const AdminPage = () => {
               >
                 Add Product
               </Button>
-              {/* <<< REPLACE OLD FILTER BUTTON WITH ProductFilter COMPONENT >>> */}
+              {/* The filter button wasd broken so i change */}
               <ProductFilter onFilterChange={handleProductFilterChange} />
             </div>
           </div>
@@ -369,15 +362,14 @@ const AdminPage = () => {
               columns={columns}
               dataSource={products}
               scroll={{ x: 1500, y: 'calc(100vh - 350px)' }}
-              pagination={false} // Keeping original pagination setting
+              pagination={false} 
               bordered
-              loading={loading || loadingDelete} // Keeping original loading prop
+              loading={loading || loadingDelete} 
             />
           </div>
         </Card>
       </div>
 
-      {/* Delete Product Modal (remains unchanged) */}
       <Modal
         title="Confirm Delete"
         visible={isDeleteModalVisible}
@@ -403,7 +395,7 @@ const AdminPage = () => {
         <p>Are you sure you want to delete this product? This action cannot be undone.</p>
       </Modal>
 
-      {/* Add/Edit Product Modal (remains unchanged) */}
+    
       <Modal
         title={editingProduct ? "Edit Product" : "Add New Product"}
         visible={isModalVisible}
@@ -522,7 +514,7 @@ const AdminPage = () => {
         </Form>
       </Modal>
 
-      {/* Add Size Modal (remains unchanged) */}
+    
       <Modal
         title="Add Size"
         visible={isAddSizeModalVisible}
@@ -558,7 +550,7 @@ const AdminPage = () => {
         </Form>
       </Modal>
 
-      {/* Update Size Stock Modal (remains unchanged) */}
+    
       <Modal
         title="Update Size Stock"
         visible={isUpdateSizeModalVisible}
