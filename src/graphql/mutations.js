@@ -124,3 +124,15 @@ export const CREATE_ORDER = gql`
     }
   }
 `;
+
+export const GET_ORDER_BY_CUSTOMER_ID = gql`
+  query {
+    getOrderByCustomerId { customer_id product_id size_type quantity total_price
+      product_id
+      quantity
+      location
+      total_price
+      size_type   
+    }
+  }
+`;
