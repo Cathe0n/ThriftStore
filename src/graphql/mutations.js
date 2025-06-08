@@ -115,8 +115,8 @@ export const REMOVE_FROM_CART = gql`
 `;
 
 export const CREATE_ORDER = gql`
-  mutation createOrder($product_id: String!, $quantity: Int!, $size_type: String!) {
-    createOrder(product_id: $product_id, quantity: $quantity, size_type: $size_type) {
+  mutation createOrder($product_id: String!, $quantity: Int!, $size_type: String!, $location:String!) {
+    createOrder(product_id: $product_id, quantity: $quantity, size_type: $size_type, location: $location) {
       product_id
       quantity
       total_price
