@@ -1,9 +1,10 @@
-import React, { useState, useContext } from "react";
+import React, { useState } from "react";
 import "../popups.css";
 import { useNavigate } from "react-router-dom";
 import { useMutation } from "@apollo/client";
 import { REGISTER_MUTATION } from "../../../graphql/mutations";
 import { useAuth } from '../../../context/AuthContext';
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function PopRegister({ isOpen, onClose, onSwitchToLogin }) {
   const [email, setEmail] = useState("");
@@ -15,7 +16,7 @@ function PopRegister({ isOpen, onClose, onSwitchToLogin }) {
   const navigate = useNavigate();
 
   const [register, { loading }] = useMutation(REGISTER_MUTATION, {
-    onCompleted: (data) => {
+    onCompleted: () => {
       onSwitchToLogin();
     },
     onError: (err) => {
@@ -43,7 +44,7 @@ function PopRegister({ isOpen, onClose, onSwitchToLogin }) {
   };
 
   const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+    setShowPassword((prev) => !prev);
   };
 
   if (!isOpen) return null;
@@ -61,34 +62,30 @@ function PopRegister({ isOpen, onClose, onSwitchToLogin }) {
           placeholder="Enter your email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          autoComplete="off"
         />
 
         <label>Password</label>
-        <div className="password-input-container">
+        <div className="password-container">
           <input
             type={showPassword ? "text" : "password"}
             placeholder="Enter your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            autoComplete="new-password"
           />
-          <button
-            type="button"
-            className="password-toggle"
-            onClick={togglePasswordVisibility}
-          >
-            {showPassword ? "Hide" : "Show"}
-          </button>
+          <span className="eye-icon" onClick={togglePasswordVisibility}>
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
+          </span>
         </div>
 
         <div className="options">
-          <label>
-            <input
-              type="checkbox"
-              checked={acceptTerms}
-              onChange={() => setAcceptTerms(!acceptTerms)}
-            />
-            By making an account you are agreeing with the terms and conditions*
-          </label>
+          <input
+            type="checkbox"
+            checked={acceptTerms}
+            onChange={() => setAcceptTerms(!acceptTerms)}
+          />
+          <label>Agree with Terms and Conditions</label>
         </div>
 
         {error && <p className="error">{error}</p>}
@@ -101,8 +98,11 @@ function PopRegister({ isOpen, onClose, onSwitchToLogin }) {
           {loading ? "Registering..." : "REGISTER"}
         </button>
 
-        <div className="switch-action" onClick={onSwitchToLogin}>
-          Already have an account? Login
+        <div className="register-info">
+          Don't have an account?{" "}
+          <span className="register-link" onClick={onSwitchToLogin}>
+            Login here
+          </span>
         </div>
       </div>
     </div>
