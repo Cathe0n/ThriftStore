@@ -462,10 +462,10 @@ const AdminPage = () => {
         okText={editingProduct ? "Update" : "Create"}
         cancelText="Cancel"
         confirmLoading={loadingCreate || loadingUpdate}
-        destroyOnClose // Good practice to reset form state
+        destroyOnClose 
       >
         <Form form={form} layout="vertical" 
-              initialValues={{ discount_rate: 0 }} // Set initial values for new products
+              initialValues={{ discount_rate: 0 }} 
         >
           <Form.Item 
             name="category_type" 
@@ -492,7 +492,6 @@ const AdminPage = () => {
               <Option value="Kids Bottoms">Kids Bottoms</Option>
               <Option value="Kids Activewear">Kids Activewear</Option>
               <Option value="Kids Outerwear">Kids Outerwear</Option>
-              {/* Value from your form code: "Kids Loungewear & Pajamas", Label "Kids Loungewear" */}
               <Option value="Kids Loungewear & Pajamas">Kids Loungewear</Option> 
             </Select>
           </Form.Item>
