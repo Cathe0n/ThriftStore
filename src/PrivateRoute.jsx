@@ -7,7 +7,6 @@ import { jwtDecode } from "jwt-decode";
 function isTokenValid(token) {
   try {
     const decoded = jwtDecode(token);
-    console.log("Decoded Token:", decoded);
     const currentTime = Date.now() / 1000; // in seconds
     return decoded.exp && decoded.exp > currentTime;
   } catch (error) {
