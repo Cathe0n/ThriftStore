@@ -1,27 +1,35 @@
-// src/components/popups/poplogin/PopLogin.js
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import "./PopLogin.css";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useMutation } from "@apollo/client";
 import { LOGIN_MUTATION } from "../../../graphql/mutations";
 import { useAuth } from "../../../context/AuthContext";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 function PopLogin({ isOpen, onClose, onSwitchToRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [remember, setRemember] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const [redirectAfterLogin, setRedirectAfterLogin] = useState("/");
+
+  useEffect(() => {
+    if (isOpen) {
+      setRedirectAfterLogin(location.pathname + location.search);
+    }
+  }, [isOpen, location]);
 
   const [loginMutation, { loading }] = useMutation(LOGIN_MUTATION, {
     onCompleted: (data) => {
       const token = data?.login?.token;
       if (token) {
-        console.log(token)
         login(token);
         onClose();
-        navigate("/women");
+        navigate(redirectAfterLogin);
       } else {
         setError("Login failed. No token received.");
       }
@@ -49,34 +57,32 @@ function PopLogin({ isOpen, onClose, onSwitchToRegister }) {
         <h1>LOGIN</h1>
         <p>Login with your email address</p>
 
+        {/* Autofill prevention */}
+        <input type="text" name="fake-username" style={{ display: "none" }} />
+        <input type="password" name="fake-password" style={{ display: "none" }} />
+
         <label>Email</label>
         <input
           type="text"
+          name="login-email"
           placeholder="Enter your email"
           value={email}
+          autoComplete="off"
           onChange={(e) => setEmail(e.target.value)}
         />
 
         <label>Password</label>
-        <input
-          type="password"
-          placeholder="Enter your password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-
-        <div className="login-options">
-          <label>
-            <input
-              type="checkbox"
-              checked={remember}
-              onChange={() => setRemember(!remember)}
-            />
-            Remember me
-          </label>
-
-          <span className="forgot" onClick={() => navigate("/forgot-password")}>
-            Forgot Password?
+        <div className="password-container">
+          <input
+            type={showPassword ? "text" : "password"}
+            name="login-password"
+            placeholder="Enter your password"
+            value={password}
+            autoComplete="off"
+            onChange={(e) => setPassword(e.target.value)}
+          />
+          <span className="eye-icon" onClick={() => setShowPassword((prev) => !prev)}>
+            {showPassword ? <FaEyeSlash /> : <FaEye />}
           </span>
         </div>
 
@@ -86,9 +92,12 @@ function PopLogin({ isOpen, onClose, onSwitchToRegister }) {
           {loading ? "Logging in..." : "LOGIN"}
         </button>
 
-        <div className="register-link" onClick={onSwitchToRegister}>
-          Make an account
-        </div>
+        <p className="register-info">
+          Don’t have an account?{" "}
+          <span className="register-link" onClick={onSwitchToRegister}>
+            Make one here
+          </span>
+        </p>
       </div>
     </div>
   );
