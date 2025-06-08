@@ -12,21 +12,28 @@ import {
 import client from '../../apollo/client';
 import { toast } from 'react-toastify';
 import { FaCheckCircle, FaTimes } from 'react-icons/fa';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
+import { ClipLoader } from 'react-spinners';
 
 const ShoppingBag = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
+
   const [cartItems, setCartItems] = useState([]);
   const [locationModalOpen, setLocationModalOpen] = useState(false);
   const [shippingAddress, setShippingAddress] = useState('');
   const [paymentConfirmed, setPaymentConfirmed] = useState(false);
-  const [fetched, setFetched] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const [fetchCart] = useLazyQuery(GET_SHOPPINGCART_BY_CUSTOMER_ID, {
+    fetchPolicy: 'network-only',
     onCompleted: async (res) => {
       const items = res?.getShoppingcartBycustomerId || [];
 
       const detailedItems = await Promise.all(
         items.map(async (item) => {
+          console.log("item from backend:", item);
           try {
             const productRes = await client.query({
               query: GET_PRODUCT_BY_ID,
@@ -41,7 +48,7 @@ const ShoppingBag = () => {
               brand: product.brand,
               price: product.price,
               product_name: product.product_name,
-              ShoppingCartID: item.id || item._id
+              ShoppingCartID: item.id
             };
           } catch (err) {
             console.error(err);
@@ -49,11 +56,14 @@ const ShoppingBag = () => {
           }
         })
       );
+
       setCartItems(detailedItems);
+      setLoading(false);
     },
     onError: (err) => {
       toast.error('Failed to fetch cart');
       console.error(err);
+      setLoading(false);
     }
   });
 
@@ -61,11 +71,11 @@ const ShoppingBag = () => {
   const [removeFromCart] = useMutation(REMOVE_FROM_CART);
 
   useEffect(() => {
-    if (user && !fetched) {
+    if (user) {
+      setLoading(true);
       fetchCart();
-      setFetched(true);
     }
-  }, [user, fetched, fetchCart]);
+  }, [user]);
 
   const handlePayNow = () => {
     if (!shippingAddress.trim()) {
@@ -93,16 +103,36 @@ const ShoppingBag = () => {
       toast.success('Order placed!');
       setCartItems([]);
       setPaymentConfirmed(true);
+
       setTimeout(() => {
         setPaymentConfirmed(false);
         setLocationModalOpen(false);
         setShippingAddress('');
+        navigate('/userTransaction');
       }, 2000);
     });
   };
 
-  const handleRemoveFromState = (id) => {
-    setCartItems((prev) => prev.filter((item) => item.ShoppingCartID !== id));
+  const handleRemoveFromState = async (id) => {
+    const removedItem = cartItems.find((item) => item.ShoppingCartID === id);
+    if (!removedItem) return;
+
+    setCartItems((prev) =>
+      prev.map((item) =>
+        item.ShoppingCartID === id ? { ...item, removing: true } : item
+      )
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, 300)); // Wait for animation
+
+    try {
+      await removeFromCart({ variables: { ShoppingCartID: id } });
+      toast.success('Item removed from cart');
+      fetchCart(); // Refresh the cart
+    } catch (err) {
+      toast.error('Failed to remove item');
+      console.error(err);
+    }
   };
 
   const totalPrice = cartItems.reduce((acc, item) => acc + item.total_price, 0);
@@ -122,23 +152,42 @@ const ShoppingBag = () => {
     <div className="shoppingbag-container">
       <h2>Shopping Bag</h2>
 
-      <div className="content-area">
-        <div className="items-list">
-          {cartItems.map((item, idx) => (
-            <SelectedItems key={idx} item={item} onRemove={handleRemoveFromState} />
-          ))}
+      {loading ? (
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '2rem' }}>
+          <ClipLoader size={50} color="#000" />
         </div>
+      ) : (
+        <div className="content-area">
+          <div className="items-list">
+            <AnimatePresence>
+              {cartItems.map((item) =>
+                !item.removing ? (
+                  <motion.div
+                    key={item.ShoppingCartID}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10, transition: { duration: 0.3 } }}
+                  >
+                    <SelectedItems item={item} onRemove={handleRemoveFromState} />
+                  </motion.div>
+                ) : null
+              )}
+            </AnimatePresence>
+          </div>
 
-        <div className="payment-summary-box">
-          <h4>PAYMENT SUMMARY</h4>
-          <p>Total Price: Rp {totalPrice.toLocaleString('id-ID')}</p>
-          <p>Shipping Cost: Rp {shippingCost.toLocaleString('id-ID')}</p>
-          <h4>Total Billing: <strong>Rp {billing.toLocaleString('id-ID')}</strong></h4>
-          <button className="pay-now" onClick={() => setLocationModalOpen(true)}>
-            PAY NOW
-          </button>
+          <div className="payment-summary-box">
+            <h4>PAYMENT SUMMARY</h4>
+            <p>Total Price: Rp {totalPrice.toLocaleString('id-ID')}</p>
+            <p>Shipping Cost: Rp {shippingCost.toLocaleString('id-ID')}</p>
+            <h4>
+              Total Billing: <strong>Rp {billing.toLocaleString('id-ID')}</strong>
+            </h4>
+            <button className="pay-now" onClick={() => setLocationModalOpen(true)}>
+              PAY NOW
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {locationModalOpen && (
         <div className="modal-overlay">
@@ -153,7 +202,9 @@ const ShoppingBag = () => {
               placeholder="Your address here..."
               rows={4}
             />
-            <button className="pay-now" onClick={handlePayNow}>Confirm Payment</button>
+            <button className="pay-now" onClick={handlePayNow}>
+              Confirm Payment
+            </button>
 
             {paymentConfirmed && (
               <div className="confirmation">

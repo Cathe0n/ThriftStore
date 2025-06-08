@@ -99,6 +99,7 @@ export const ADD_PRODUCT_TO_CART = gql`
 export const GET_SHOPPINGCART_BY_CUSTOMER_ID = gql`
   query {
     getShoppingcartBycustomerId {
+      id
       product_id
       product_name
       quantity
