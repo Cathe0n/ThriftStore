@@ -70,6 +70,14 @@ function Header() {
 
         <div className="header-right">
           <NavLink
+            to="/userTransaction"
+            className={() =>
+              isActiveLink("/userTransaction") ? "nav-link active-link" : "nav-link"
+            }
+          >
+            TRANSACTION
+          </NavLink>
+          <NavLink
             to="/wishlist"
             className={() =>
               isActiveLink("/wishlist") ? "nav-link active-link" : "nav-link"
