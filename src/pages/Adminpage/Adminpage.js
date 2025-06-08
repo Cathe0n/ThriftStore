@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
+import React, { useState, useEffect, useCallback } from 'react'; 
 import { useMutation, useQuery, useLazyQuery } from "@apollo/client";
 import { Table, Button, Modal, Form, Input, Select, InputNumber, message, Card, Tag, Popover } from 'antd';
 import { EditOutlined, PlusOutlined, FilterOutlined, DeleteOutlined } from '@ant-design/icons';
@@ -10,13 +10,13 @@ import { ADMIN_UPDATE_PRODUCT } from '../../graphql/adminMutations';
 import { ADMIN_DELETE_PRODUCT } from '../../graphql/adminMutations';
 import { ADMIN_ADD_SIZE } from '../../graphql/adminMutations';
 import { ADMIN_VIEW_SIZES_BY_PRODUCT_ID } from '../../graphql/adminMutations';
-import ProductFilter from './ProductFilter'; // <<< NEW IMPORT (adjust path if needed)
+import ProductFilter from './ProductFilter';
 
 const { Option } = Select;
 
 const AdminPage = () => {
   const { data, loading, error } = useQuery(GET_ALL_PRODUCTS);
-  const [getProductSizes, { loading: loadingSizes }] = useLazyQuery(ADMIN_VIEW_SIZES_BY_PRODUCT_ID); // Added loading state for sizes
+  const [getProductSizes, { loading: loadingSizes }] = useLazyQuery(ADMIN_VIEW_SIZES_BY_PRODUCT_ID); 
   const [createProduct, { loading: loadingCreate }] = useMutation(ADMIN_CREATE_PRODUCT, {
     refetchQueries: [{ query: GET_ALL_PRODUCTS }],
     awaitRefetchQueries: true,
@@ -43,20 +43,17 @@ const AdminPage = () => {
   const [form] = Form.useForm();
   const [sizeForm] = Form.useForm();
 
-  // <<< NEW STATE FOR PRODUCT FILTERS >>>
+  // product filters imma jump ong
   const [activeProductFilters, setActiveProductFilters] = useState({});
 
   const fetchProductSizesByIds = useCallback(async (productIdsToFetch) => {
     if (!productIdsToFetch || productIdsToFetch.length === 0) {
         return;
     }
-    // Fetch only for IDs not already in productSizes or if forced
     const newSizesData = { ...productSizes };
     let fetchedNewData = false;
 
     for (const productId of productIdsToFetch) {
-        // Optionally, only fetch if not already present or needs refresh
-        // if (newSizesData[productId] && !forceRefresh) continue; 
         try {
             const { data: sizeData } = await getProductSizes({
             variables: { product_id: productId }
@@ -65,17 +62,17 @@ const AdminPage = () => {
             newSizesData[productId] = sizeData.getProductsizes;
             fetchedNewData = true;
             } else {
-            newSizesData[productId] = []; // Ensure it's an array even if no data
+            newSizesData[productId] = []; 
             }
         } catch (err) {
             console.error(`Error fetching sizes for product ${productId}:`, err);
-            newSizesData[productId] = []; // Default to empty array on error
+            newSizesData[productId] = []; 
         }
     }
     if (fetchedNewData) {
         setProductSizes(newSizesData);
     }
-  }, [getProductSizes, productSizes]); // Added productSizes to dependencies of useCallback
+  }, [getProductSizes, productSizes]); // callback
 
 
   useEffect(() => {
@@ -95,7 +92,7 @@ const AdminPage = () => {
         description: p.description,
       }));
 
-      // <<< APPLY PRODUCT FILTERS >>>
+      // apply button product filter
       let filteredProducts = initialFormattedProducts;
       if (Object.keys(activeProductFilters).length > 0) {
         const { categories, genders, minPrice, maxPrice } = activeProductFilters;
@@ -128,17 +125,14 @@ const AdminPage = () => {
       setProducts(filteredProducts);
       
       const productIdsToDisplay = filteredProducts.map(p => p.product_id);
-      // Fetch sizes for the products that are currently being displayed (after filtering)
-      // Consider fetching only for new products if performance becomes an issue
       if (productIdsToDisplay.length > 0) {
         fetchProductSizesByIds(productIdsToDisplay);
       }
     } else {
-        setProducts([]); // Clear products if no data
-        setProductSizes({}); // Clear sizes too
+        setProducts([]); 
+        setProductSizes({}); 
     }
-  }, [data, activeProductFilters, fetchProductSizesByIds]); // <<< ADDED activeProductFilters and fetchProductSizesByIds
-
+  }, [data, activeProductFilters, fetchProductSizesByIds]); // product filter ids
   const SizesDisplay = ({ productId }) => {
     const sizes = productSizes[productId] || [];
     
@@ -160,7 +154,7 @@ const AdminPage = () => {
     return (
       <Popover content={content} title="Available Sizes & Stock" trigger="hover">
         <div style={{ cursor: 'pointer', display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-          {sizes.slice(0, 2).map((size, index) => ( // Show first 2 tags directly
+          {sizes.slice(0, 2).map((size, index) => ( 
             <Tag key={index} color="blue">
               {size.size_type} ({size.stock_amount})
             </Tag>
@@ -214,9 +208,9 @@ const AdminPage = () => {
       render: (rate) => `${rate}%`,
     },
     {
-      title: 'Available Sizes', // Changed title slightly
+      title: 'Available Sizes', 
       key: 'sizes',
-      width: 180, // Increased width a bit for better display
+      width: 150, 
       render: (_, record) => (
         <SizesDisplay productId={record.product_id} />
       ),
@@ -372,7 +366,7 @@ const AdminPage = () => {
     }
   };
 
-  // <<< NEW HANDLER FOR PRODUCT FILTER CHANGES >>>
+  // handlin filter
   const handleProductFilterChange = (filters) => {
     setActiveProductFilters(filters);
   };
@@ -414,8 +408,8 @@ const AdminPage = () => {
               className="products-table"
               columns={columns}
               dataSource={products}
-              scroll={{ x: 1500, y: 'calc(100vh - 350px)' }} // Original scroll
-              pagination={{ pageSize: 15, showSizeChanger: true, pageSizeOptions: ['15', '30', '50', '100'] }} // Added pagination
+              scroll={{ x: 1500, y: 'calc(100vh - 350px)' }}
+              pagination={false}
               bordered
               loading={loading || loadingDelete || loadingSizes } // Added loadingSizes
             />
@@ -431,7 +425,6 @@ const AdminPage = () => {
           try {
             await deleteProduct({ variables: { product_id: productToDelete } });
             message.success('Product deleted successfully');
-            // Optionally remove sizes for deleted product from local state
             setProductSizes(prevSizes => {
               const newSizes = {...prevSizes};
               delete newSizes[productToDelete];
@@ -539,6 +532,22 @@ const AdminPage = () => {
           >
             <InputNumber min={0} max={100} style={{ width: '100%' }} formatter={value => `${value}%`} parser={value => String(value).replace('%', '')} />
           </Form.Item>
+        
+           {/* <Form.Item 
+            name="total_stock" 
+            label="Total Stock" 
+            rules={[{ required: true, message: 'Please input total stock' }]}
+          >
+            <InputNumber min={0} style={{ width: '100%' }} />
+          </Form.Item>
+
+          <Form.Item 
+            name="sold_amount" 
+            label="Sold Amount" 
+            rules={[{ required: false }]}
+          >
+            <InputNumber min={0} style={{ width: '100%' }} />
+          </Form.Item> */}
 
           <Form.Item 
             name="description" 
@@ -575,13 +584,13 @@ const AdminPage = () => {
             rules={[{ required: true, message: 'Please select size type' }]}
           >
             <Select placeholder="Select size">
-              <Option value="XS">XS</Option> 
+          
               <Option value="S">S</Option>
               <Option value="M">M</Option>
               <Option value="L">L</Option>
               <Option value="XL">XL</Option>
               <Option value="XXL">XXL</Option>
-              <Option value="XXXL">XXXL</Option>
+          
             </Select>
           </Form.Item>
 
