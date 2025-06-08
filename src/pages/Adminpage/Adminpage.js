@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useMutation, useQuery, useLazyQuery } from "@apollo/client";
-import { Table, Button, Modal, Form, Input, Select, InputNumber, message, Card,Tag, Popover } from 'antd';
+import { useMutation, useQuery } from "@apollo/client";
+import { Table, Button, Modal, Form, Input, Select, InputNumber, message, Card } from 'antd';
 import { EditOutlined, PlusOutlined, FilterOutlined, DeleteOutlined } from '@ant-design/icons';
 import AdminHeader from '../../components/header/AdminHeader';
 import './Adminpage.css';
@@ -9,13 +9,16 @@ import { ADMIN_CREATE_PRODUCT } from '../../graphql/adminMutations';
 import { ADMIN_UPDATE_PRODUCT } from '../../graphql/adminMutations';
 import { ADMIN_DELETE_PRODUCT } from '../../graphql/adminMutations';
 import { ADMIN_ADD_SIZE } from '../../graphql/adminMutations';
-import { ADMIN_VIEW_SIZES_BY_PRODUCT_ID } from '../../graphql/adminMutations';
+import { ADMIN_UPDATE_SIZE_STOCK } from '../../graphql/adminMutations';
+// import OrderFilter from './OrderFilter'; // Keep if you still need it elsewhere
+import ProductFilter from './ProductFilter'; // Import the new ProductFilter
+import { Row, Col } from 'antd'
+
 
 const { Option } = Select;
 
 const AdminPage = () => {
-  const { data, loading, error } = useQuery(GET_ALL_PRODUCTS);
-  const [getProductSizes] = useLazyQuery(ADMIN_VIEW_SIZES_BY_PRODUCT_ID);
+  const { data, loading, error: queryError } = useQuery(GET_ALL_PRODUCTS); // Renamed error to avoid conflict
   const [createProduct, { loading: loadingCreate }] = useMutation(ADMIN_CREATE_PRODUCT, {
     refetchQueries: [{ query: GET_ALL_PRODUCTS }],
     awaitRefetchQueries: true,
@@ -32,41 +35,28 @@ const AdminPage = () => {
     refetchQueries: [{ query: GET_ALL_PRODUCTS }],
     awaitRefetchQueries: true,
   });
+  const [updateSizeStock] = useMutation(ADMIN_UPDATE_SIZE_STOCK, {
+    refetchQueries: [{ query: GET_ALL_PRODUCTS }],
+    awaitRefetchQueries: true,
+  });
   
   const [products, setProducts] = useState([]);
-  const [productSizes, setProductSizes] = useState({});
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [productToDelete, setProductToDelete] = useState(null);
   const [isAddSizeModalVisible, setIsAddSizeModalVisible] = useState(false);
+  const [isUpdateSizeModalVisible, setIsUpdateSizeModalVisible] = useState(false);
   const [currentProductId, setCurrentProductId] = useState(null);
   const [form] = Form.useForm();
   const [sizeForm] = Form.useForm();
 
-  const fetchAllProductSizes = async (productIds) => {
-    const sizesData = {};
-    
-    for (const productId of productIds) {
-      try {
-        const { data: sizeData } = await getProductSizes({
-          variables: { product_id: productId }
-        });
-        
-        if (sizeData?.getProductsizes) {
-          sizesData[productId] = sizeData.getProductsizes;
-        }
-      } catch (error) {
-        console.error(`Error fetching sizes for product ${productId}:`, error);
-        sizesData[productId] = [];
-      }
-    }
-    
-    setProductSizes(sizesData);
-  };
+  // State for active product filters
+  const [activeFilters, setActiveFilters] = useState({});
+
   useEffect(() => {
     if (data?.getAllProducts) {
-      const formattedProducts = data.getAllProducts.map((p, index) => ({
+      let formattedProducts = data.getAllProducts.map((p) => ({ // Removed index as it's not used
         key: p.id,
         product_id: p.id,
         product_name: p.product_name,
@@ -75,50 +65,46 @@ const AdminPage = () => {
         discount_rate: p.discount_rate,
         category_type: p.category_type,
         sold_amount: p.sold_amount,
-        total_stock: p.Total_stock,
+        total_stock: p.Total_stock, // Assuming backend field is Total_stock
         imagePath: p.imagePath,
         brand: p.brand,
         description: p.description,
       }));
+
+      // Apply filters if any are active
+      if (Object.keys(activeFilters).length > 0) {
+        const { categories, genders, minPrice, maxPrice } = activeFilters;
+
+        formattedProducts = formattedProducts.filter(product => {
+          let isMatch = true;
+
+          // Category filter
+          if (categories && categories.length > 0) {
+            isMatch = isMatch && categories.includes(product.category_type);
+          }
+
+          // Gender filter
+          if (genders && genders.length > 0) {
+            // Ensure case-insensitivity or consistent casing in data
+            isMatch = isMatch && genders.includes(product.gender.toLowerCase()); 
+          }
+
+          // Price filter
+          if (minPrice !== undefined && minPrice !== null && typeof minPrice === 'number') {
+            isMatch = isMatch && product.price >= minPrice;
+          }
+          if (maxPrice !== undefined && maxPrice !== null && typeof maxPrice === 'number') {
+            isMatch = isMatch && product.price <= maxPrice;
+          }
+          
+          return isMatch;
+        });
+      }
       setProducts(formattedProducts);
-      const productIds = formattedProducts.map(p => p.product_id);
-      fetchAllProductSizes(productIds);
+    } else {
+      setProducts([]); // Clear products if no data or data.getAllProducts is null/undefined
     }
-  }, [data]);
-
-  const SizesDisplay = ({ productId }) => {
-    const sizes = productSizes[productId] || [];
-    
-    if (sizes.length === 0) {
-      return <Tag color="default">No sizes</Tag>;
-    }
-
-    const content = (
-      <div style={{ maxWidth: '200px' }}>
-        {sizes.map((size, index) => (
-          <div key={index} style={{ marginBottom: '4px' }}>
-            <Tag color="blue">{size.size_type}</Tag>
-            <span>Stock: {size.stock_amount}</span>
-          </div>
-        ))}
-      </div>
-    );
-
-    return (
-      <Popover content={content} title="Available Sizes" trigger="hover">
-        <div style={{ cursor: 'pointer' }}>
-          {sizes.slice(0, 3).map((size, index) => (
-            <Tag key={index} color="blue" style={{ marginBottom: '2px' }}>
-              {size.size_type}
-            </Tag>
-          ))}
-          {sizes.length > 3 && (
-            <Tag color="default">+{sizes.length - 3} more</Tag>
-          )}
-        </div>
-      </Popover>
-    );
-  };
+  }, [data, activeFilters]); // Re-run when data or activeFilters change
 
   const columns = [
     {
@@ -152,6 +138,7 @@ const AdminPage = () => {
       key: 'price',
       width: 100,
       render: (price) => `$${price.toFixed(0)}`,
+      sorter: (a, b) => a.price - b.price, // Optional: add sorting
     },
     {
       title: 'Discount Rate (%)',
@@ -161,18 +148,11 @@ const AdminPage = () => {
       render: (rate) => `${rate}%`,
     },
     {
-      title: 'Available Sizes',
-      key: 'sizes',
-      width: 150,
-      render: (_, record) => (
-        <SizesDisplay productId={record.product_id} />
-      ),
-    },
-    {
       title: 'Total Stock',
       dataIndex: 'total_stock',
       key: 'total_stock',
       width: 110,
+      sorter: (a, b) => a.total_stock - b.total_stock, // Optional: add sorting
     },
     {
       title: 'Sold Amount',
@@ -190,7 +170,7 @@ const AdminPage = () => {
     {
       title: 'Actions',
       key: 'actions',
-      width: 220,
+      width: 260,
       fixed: 'right',
       render: (_, record) => (
         <div className="table-actions">
@@ -206,7 +186,7 @@ const AdminPage = () => {
             icon={<DeleteOutlined />} 
             danger
             onClick={() => handleDelete(record.product_id)}
-            loading={loadingDelete}
+            // loading={loadingDelete} // Consider moving loading state to specific delete button if needed
           >
             Delete
           </Button>
@@ -216,6 +196,13 @@ const AdminPage = () => {
             style={{ color: '#1890ff' }}
           >
             Add Size
+          </Button>
+          <Button 
+            type="link" 
+            onClick={() => handleUpdateSizeStock(record.product_id)}
+            style={{ color: '#52c41a' }}
+          >
+            Update Stock
           </Button>
         </div>
       ),
@@ -230,16 +217,8 @@ const AdminPage = () => {
 
   const handleEdit = (product) => {
     form.setFieldsValue({
-      product_name: product.product_name,
-      gender: product.gender,
-      price: product.price,
-      discount_rate: product.discount_rate,
-      category_type: product.category_type,
-      sold_amount: product.sold_amount,
-      total_stock: product.total_stock,
-      brand: product.brand,
-      description: product.description,
-      imagePath: product.imagePath,
+      ...product, // Spread the product to fill form
+      // price and discount_rate are already numbers
     });
     setEditingProduct(product);
     setIsModalVisible(true);
@@ -256,37 +235,44 @@ const AdminPage = () => {
     setIsAddSizeModalVisible(true);
   };
 
-  
+  const handleUpdateSizeStock = (productId) => {
+    setCurrentProductId(productId);
+    sizeForm.resetFields();
+    setIsUpdateSizeModalVisible(true);
+  };
+
   const handleSubmit = () => {
     form.validateFields().then(async values => {
       try {
+        const productInput = {
+          product_name: values.product_name,
+          gender: values.gender,
+          price: parseFloat(values.price),
+          discount_rate: parseFloat(values.discount_rate),
+          category_type: values.category_type,
+          imagePath: values.imagePath || '',
+          brand: values.brand,
+          description: values.description,
+          // total_stock and sold_amount are usually managed by sizes or other logic
+          // For create, total_stock might be needed, or derived from initial sizes.
+          // For update, total_stock is often a calculated field.
+          // The mutations ADMIN_CREATE_PRODUCT and ADMIN_UPDATE_PRODUCT will determine required fields.
+          // Assuming total_stock is part of product details for now as per form:
+          total_stock: parseInt(values.total_stock, 10), 
+          sold_amount: values.sold_amount ? parseInt(values.sold_amount, 10) : 0,
+        };
+
         if (editingProduct) {
           await updateProduct({
             variables: {
               product_id: editingProduct.product_id,
-              product_name: values.product_name,
-              gender: values.gender,
-              price: parseFloat(values.price),
-              discount_rate: parseFloat(values.discount_rate),
-              category_type: values.category_type,
-              imagePath: values.imagePath || '',
-              brand: values.brand,
-              description: values.description
+              ...productInput
             }
           });
           message.success('Product updated successfully');
         } else {
           await createProduct({
-            variables: {
-              product_name: values.product_name,
-              gender: values.gender,
-              price: parseFloat(values.price),
-              discount_rate: parseFloat(values.discount_rate),
-              category_type: values.category_type,
-              imagePath: values.imagePath || '',
-              brand: values.brand,
-              description: values.description
-            }
+            variables: productInput // Pass the whole object
           });
           message.success('Product added successfully');
         }
@@ -302,15 +288,13 @@ const AdminPage = () => {
   const handleAddSizeSubmit = async () => {
     try {
       const values = await sizeForm.validateFields();
-      console.log('Adding size for product:', currentProductId);
       await addSize({
         variables: {
           product_id: currentProductId,
           size_type: values.size_type,
-          stock_amount: values.stock_amount
+          stock_amount: parseInt(values.stock_amount, 10)
         }
       });
-      await fetchAllProductSizes([currentProductId]);
       message.success('Size added successfully');
       setIsAddSizeModalVisible(false);
     } catch (err) {
@@ -318,9 +302,30 @@ const AdminPage = () => {
     }
   };
 
+  const handleUpdateSizeStockSubmit = async () => {
+    try {
+      const values = await sizeForm.validateFields();
+      await updateSizeStock({
+        variables: {
+          product_id: currentProductId,
+          size_type: values.size_type,
+          stock_amount: parseInt(values.stock_amount, 10)
+        }
+      });
+      message.success('Size stock updated successfully');
+      setIsUpdateSizeModalVisible(false);
+    } catch (err) {
+      message.error(`Failed to update size stock: ${err.message}`);
+    }
+  };
+
+  // Callback for ProductFilter component
+  const handleProductFilterChange = (filters) => {
+    setActiveFilters(filters);
+  };
 
   if (loading) return <p>Loading products...</p>;
-  if (error) return <p>Error loading products: ${error.message}</p>;
+  if (queryError) return <p>Error loading products: ${queryError.message}</p>;
 
   return (
     <div className="admin-dashboard-container">
@@ -340,30 +345,26 @@ const AdminPage = () => {
               >
                 Add Product
               </Button>
-              <Button 
-                icon={<FilterOutlined />} 
-                size="large"
-              >
-                Filters
-              </Button>
+              {/* Replace old Filter button with ProductFilter component */}
+              <ProductFilter onFilterChange={handleProductFilterChange} />
             </div>
           </div>
         </Card>
 
         <Card className="products-card">
           <h2 className="section-title">
-            <span>Current Available Products </span>
-            <span className="product-count"> {" ("}{products.length} items{")"}</span>
+            <span>Current Products</span>
+            <span className="product-count">{products.length} items</span>
           </h2>
           <div className="products-table-container">
             <Table
               className="products-table"
               columns={columns}
               dataSource={products}
-              scroll={{ x: 1500, y: 'calc(100vh - 350px)' }}
-              pagination={false}
+              scroll={{ x: 1500, y: 'calc(100vh - 400px)' }} // Adjusted y scroll slightly
+              pagination={{ pageSize: 15, showSizeChanger: true, pageSizeOptions: ['15', '30', '50'] }} // Added pagination
               bordered
-              loading={loading || loadingDelete}
+              loading={loading || loadingCreate || loadingUpdate || loadingDelete} // More comprehensive loading
             />
           </div>
         </Card>
@@ -374,23 +375,24 @@ const AdminPage = () => {
         title="Confirm Delete"
         visible={isDeleteModalVisible}
         onOk={async () => {
+          if (!productToDelete) return;
           try {
             await deleteProduct({ variables: { product_id: productToDelete } });
             message.success('Product deleted successfully');
+            setProductToDelete(null); // Reset
           } catch (err) {
             message.error(`Failed to delete product: ${err.message}`);
           } finally {
             setIsDeleteModalVisible(false);
           }
         }}
-        onCancel={() => setIsDeleteModalVisible(false)}
-        okType="danger"
+        onCancel={() => {
+            setIsDeleteModalVisible(false);
+            setProductToDelete(null); // Reset
+        }}
+        okButtonProps={{ danger: true, loading: loadingDelete }}
         okText="Delete"
         cancelText="Cancel"
-        okButtonProps={{
-          danger: true,
-          type: 'primary',
-        }}
       >
         <p>Are you sure you want to delete this product? This action cannot be undone.</p>
       </Modal>
@@ -405,13 +407,15 @@ const AdminPage = () => {
         okText={editingProduct ? "Update" : "Create"}
         cancelText="Cancel"
         confirmLoading={loadingCreate || loadingUpdate}
+        destroyOnClose // To reset form state when modal is closed
       >
-        <Form form={form} layout="vertical">
+        <Form form={form} layout="vertical" initialValues={{ discount_rate: 0, sold_amount: 0 }}>
           <Form.Item 
             name="category_type" 
             label="Category" 
             rules={[{ required: true, message: 'Please select a category' }]}
           >
+            {/* Corrected category names for consistency */}
             <Select placeholder="Select category">
               <Option value="Women's Tops">Women's Tops</Option>
               <Option value="Women's Sweaters & Hoodies">Women's Sweaters & Hoodies</Option>
@@ -432,7 +436,7 @@ const AdminPage = () => {
               <Option value="Kids Bottoms">Kids Bottoms</Option>
               <Option value="Kids Activewear">Kids Activewear</Option>
               <Option value="Kids Outerwear">Kids Outerwear</Option>
-              <Option value="Kids Loungewear & Pajamas">Kids Loungewear</Option>
+              <Option value="Kids Loungewear & Pajamas">Kids Loungewear & Pajamas</Option>
             </Select>
           </Form.Item>
 
@@ -450,9 +454,9 @@ const AdminPage = () => {
             rules={[{ required: true, message: 'Please select gender' }]}
           >
             <Select placeholder="Select gender">
-              <Option value="female">female</Option>
-              <Option value="male">male</Option>
-              <Option value="unisex">unisex</Option>
+              <Option value="female">Female</Option>
+              <Option value="male">Male</Option>
+              <Option value="unisex">Unisex</Option>
             </Select>
           </Form.Item>
 
@@ -469,32 +473,37 @@ const AdminPage = () => {
             label="Price ($)" 
             rules={[{ required: true, message: 'Please input price' }]}
           >
-            <InputNumber min={0} style={{ width: '100%' }} prefix="$" />
+            <InputNumber min={0} style={{ width: '100%' }} prefix="$" precision={2} />
           </Form.Item>
 
           <Form.Item 
             name="discount_rate" 
             label="Discount Rate (%)" 
-            rules={[{ required: true, message: 'Please input discount rate' }]}
+            rules={[{ required: true, message: 'Please input discount rate (0-100)' }]}
           >
-            <InputNumber min={0} max={100} style={{ width: '100%' }} />
+            <InputNumber min={0} max={100} style={{ width: '100%' }} formatter={value => `${value}%`} parser={value => value.replace('%', '')} />
           </Form.Item>
 
-          {/* <Form.Item 
+          <Form.Item 
             name="total_stock" 
-            label="Total Stock" 
+            label="Total Stock (calculated from sizes)" 
             rules={[{ required: true, message: 'Please input total stock' }]}
+            // This field might be better as read-only if it's derived from individual sizes.
+            // Or, if it's set manually at product creation and then updated by size changes.
+            // For now, keeping it editable as per original code.
           >
             <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
 
           <Form.Item 
             name="sold_amount" 
-            label="Sold Amount" 
-            rules={[{ required: false }]}
+            label="Sold Amount (updated automatically)" 
+            rules={[{ required: false }]} // Usually not directly editable
+            initialValue={0}
           >
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item> */}
+            <InputNumber min={0} style={{ width: '100%' }} disabled={!editingProduct} /> 
+            {/* Disable for new products, potentially enable for edits if admin needs to adjust */}
+          </Form.Item>
 
           <Form.Item 
             name="description" 
@@ -507,7 +516,7 @@ const AdminPage = () => {
           <Form.Item 
             name="imagePath" 
             label="Image Path" 
-            rules={[{ required: false }]}
+            rules={[{ required: false }]} // Make required if image is mandatory
           >
             <Input placeholder="URL or file path" />
           </Form.Item>
@@ -522,6 +531,7 @@ const AdminPage = () => {
         onCancel={() => setIsAddSizeModalVisible(false)}
         okText="Add"
         cancelText="Cancel"
+        destroyOnClose
       >
         <Form form={sizeForm} layout="vertical">
           <Form.Item 
@@ -530,11 +540,13 @@ const AdminPage = () => {
             rules={[{ required: true, message: 'Please select size type' }]}
           >
             <Select placeholder="Select size">
+              <Option value="XS">XS</Option>
               <Option value="S">S</Option>
               <Option value="M">M</Option>
               <Option value="L">L</Option>
               <Option value="XL">XL</Option>
               <Option value="XXL">XXL</Option>
+              <Option value="XXXL">XXXL</Option>
             </Select>
           </Form.Item>
 
@@ -548,6 +560,42 @@ const AdminPage = () => {
         </Form>
       </Modal>
 
+      {/* Update Size Stock Modal */}
+      <Modal
+        title="Update Size Stock"
+        visible={isUpdateSizeModalVisible}
+        onOk={handleUpdateSizeStockSubmit}
+        onCancel={() => setIsUpdateSizeModalVisible(false)}
+        okText="Update"
+        cancelText="Cancel"
+        destroyOnClose
+      >
+        <Form form={sizeForm} layout="vertical">
+          <Form.Item 
+            name="size_type" 
+            label="Size Type" 
+            rules={[{ required: true, message: 'Please select size type' }]}
+          >
+            <Select placeholder="Select size">
+              <Option value="XS">XS</Option>
+              <Option value="S">S</Option>
+              <Option value="M">M</Option>
+              <Option value="L">L</Option>
+              <Option value="XL">XL</Option>
+              <Option value="XXL">XXL</Option>
+              <Option value="XXXL">XXXL</Option>
+            </Select>
+          </Form.Item>
+
+          <Form.Item 
+            name="stock_amount" 
+            label="New Stock Amount" 
+            rules={[{ required: true, message: 'Please input stock amount' }]}
+          >
+            <InputNumber min={0} style={{ width: '100%' }} />
+          </Form.Item>
+        </Form>
+      </Modal>
     </div>
   );
 };
