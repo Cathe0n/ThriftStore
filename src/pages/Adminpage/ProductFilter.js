@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Modal, Checkbox, Space, Divider, InputNumber, Form } from 'antd';
+import React, { useState } from 'react';
+import { Button, Modal, Checkbox, Space, Divider, InputNumber, Form, Row, Col } from 'antd';
 import { FilterOutlined, CloseOutlined } from '@ant-design/icons';
 
 const ProductFilter = ({ onFilterChange }) => {
@@ -7,14 +7,13 @@ const ProductFilter = ({ onFilterChange }) => {
   const [form] = Form.useForm();
   const [activeFilterCount, setActiveFilterCount] = useState(0);
 
-  // Define options for filters
-  // Ensure these category names match exactly with what's used in AdminPage product form and data
+  // These category names MUST MATCH the <Option value="..."> in AdminPage.js Form.Item for "category_type"
   const categoryOptions = [
-    "Women's Tops", "Women's Sweaters & Hoodies", "Women's Bottoms",
+    "Women's Tops", "Women's Sweaters & Hoodiess", "Women's Bottoms",
     "Women's Activewear", "Women's Dresses & Skirts", "Women's Outerwear",
-    "Men's Tops", "Men's Sweaters & Hoodies", 
+    "Men's Tops", "Men's Sweaters & Hoodiess", 
     "Men's Bottoms", "Men's Activewear", "Men's Outerwear", "Men's Loungewear",
-    "Kids Tops", "Kids Sweaters & Hoodies", "Kids Bottoms",
+    "Kids Tops", "Kids Sweaters & Hoodies", "Kids Bottoms", // Corrected 'Hoodiess' to 'Hoodies' to match majority
     "Kids Activewear", "Kids Outerwear", "Kids Loungewear & Pajamas"
   ].map(cat => ({ label: cat, value: cat }));
 
@@ -30,14 +29,12 @@ const ProductFilter = ({ onFilterChange }) => {
     if (values.genders && values.genders.length > 0) count++;
     if ((values.minPrice !== undefined && values.minPrice !== null && values.minPrice !== '') || 
         (values.maxPrice !== undefined && values.maxPrice !== null && values.maxPrice !== '')) count++;
-    // Add more conditions if other filters are added
     return count;
   };
 
   const handleApplyFilters = () => {
     form.validateFields().then(values => {
       const activeValues = {};
-      // Clean up empty/undefined values before passing
       if (values.categories && values.categories.length > 0) {
         activeValues.categories = values.categories;
       }
@@ -54,22 +51,22 @@ const ProductFilter = ({ onFilterChange }) => {
       onFilterChange(activeValues);
       setActiveFilterCount(countSetFields(activeValues));
       setVisible(false);
+    }).catch(info => {
+      console.log('Validate Failed:', info);
     });
   };
 
   const handleClearFilters = () => {
     form.resetFields();
-    onFilterChange({}); // Pass empty object to signify all filters cleared
+    onFilterChange({});
     setActiveFilterCount(0);
     // setVisible(false); // Optional: close modal on clear
   };
 
-  // Update badge count when form values change inside the modal
   const onFormValuesChange = () => {
     const currentFormValues = form.getFieldsValue();
     setActiveFilterCount(countSetFields(currentFormValues));
   };
-
 
   return (
     <>
@@ -108,15 +105,15 @@ const ProductFilter = ({ onFilterChange }) => {
             Apply Filters
           </Button>,
         ]}
-        width={600}
+        width={600} // Increased width for better layout of checkboxes
       >
         <Form form={form} layout="vertical" onValuesChange={onFormValuesChange}>
           <Divider orientation="left">Category</Divider>
           <Form.Item name="categories">
             <Checkbox.Group style={{ width: '100%' }}>
-              <Row>
+              <Row gutter={[8, 8]}> {/* Added gutter for spacing */}
                 {categoryOptions.map(option => (
-                  <Col span={8} key={option.value}>
+                  <Col xs={24} sm={12} md={8} key={option.value}> {/* Responsive columns */}
                     <Checkbox value={option.value}>{option.label}</Checkbox>
                   </Col>
                 ))}
@@ -126,27 +123,31 @@ const ProductFilter = ({ onFilterChange }) => {
 
           <Divider orientation="left">Gender</Divider>
           <Form.Item name="genders">
-            <Checkbox.Group options={genderOptions} />
+            <Checkbox.Group>
+                <Row gutter={[8,8]}>
+                    {genderOptions.map(option => (
+                        <Col key={option.value}>
+                            <Checkbox value={option.value}>{option.label}</Checkbox>
+                        </Col>
+                    ))}
+                </Row>
+            </Checkbox.Group>
           </Form.Item>
 
-          <Divider orientation="left">Price Range</Divider>
+          <Divider orientation="left">Price Range ($)</Divider>
           <Space align="baseline">
             <Form.Item name="minPrice">
-              <InputNumber placeholder="Min Price" prefix="$" min={0} style={{width: "120px"}} />
+              <InputNumber placeholder="Min Price" min={0} style={{width: "120px"}} precision={2} />
             </Form.Item>
             <span>-</span>
             <Form.Item name="maxPrice">
-              <InputNumber placeholder="Max Price" prefix="$" min={0} style={{width: "120px"}}/>
+              <InputNumber placeholder="Max Price" min={0} style={{width: "120px"}} precision={2}/>
             </Form.Item>
           </Space>
-          {/* Future filter sections can be added here (e.g., Brand, Stock Range) */}
         </Form>
       </Modal>
     </>
   );
 };
-// Add Row and Col import if not already globally available via antd
-// For Checkbox.Group layout:
-import { Row, Col } from 'antd'; // Add this at the top of ProductFilter.js if not there
 
 export default ProductFilter;

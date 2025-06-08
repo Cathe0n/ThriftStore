@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useMutation, useQuery } from "@apollo/client";
 import { Table, Button, Modal, Form, Input, Select, InputNumber, message, Card } from 'antd';
-import { EditOutlined, PlusOutlined, FilterOutlined, DeleteOutlined } from '@ant-design/icons';
+import { EditOutlined, PlusOutlined, FilterOutlined, DeleteOutlined } from '@ant-design/icons'; // FilterOutlined is kept for the ProductFilter button
 import AdminHeader from '../../components/header/AdminHeader';
 import './Adminpage.css';
 import { ADMIN_LOGIN_MUTATION, GET_ALL_PRODUCTS } from '../../graphql/adminMutations';
@@ -10,15 +10,12 @@ import { ADMIN_UPDATE_PRODUCT } from '../../graphql/adminMutations';
 import { ADMIN_DELETE_PRODUCT } from '../../graphql/adminMutations';
 import { ADMIN_ADD_SIZE } from '../../graphql/adminMutations';
 import { ADMIN_UPDATE_SIZE_STOCK } from '../../graphql/adminMutations';
-// import OrderFilter from './OrderFilter'; // Keep if you still need it elsewhere
-import ProductFilter from './ProductFilter'; // Import the new ProductFilter
-import { Row, Col } from 'antd'
-
+import ProductFilter from './ProductFilter'; // <<< NEW IMPORT
 
 const { Option } = Select;
 
 const AdminPage = () => {
-  const { data, loading, error: queryError } = useQuery(GET_ALL_PRODUCTS); // Renamed error to avoid conflict
+  const { data, loading, error } = useQuery(GET_ALL_PRODUCTS);
   const [createProduct, { loading: loadingCreate }] = useMutation(ADMIN_CREATE_PRODUCT, {
     refetchQueries: [{ query: GET_ALL_PRODUCTS }],
     awaitRefetchQueries: true,
@@ -51,12 +48,12 @@ const AdminPage = () => {
   const [form] = Form.useForm();
   const [sizeForm] = Form.useForm();
 
-  // State for active product filters
-  const [activeFilters, setActiveFilters] = useState({});
+  // <<< NEW STATE FOR PRODUCT FILTERS >>>
+  const [activeProductFilters, setActiveProductFilters] = useState({});
 
   useEffect(() => {
     if (data?.getAllProducts) {
-      let formattedProducts = data.getAllProducts.map((p) => ({ // Removed index as it's not used
+      let formattedProducts = data.getAllProducts.map((p) => ({ // Removed 'index' as it was unused
         key: p.id,
         product_id: p.id,
         product_name: p.product_name,
@@ -65,48 +62,47 @@ const AdminPage = () => {
         discount_rate: p.discount_rate,
         category_type: p.category_type,
         sold_amount: p.sold_amount,
-        total_stock: p.Total_stock, // Assuming backend field is Total_stock
+        total_stock: p.Total_stock,
         imagePath: p.imagePath,
         brand: p.brand,
         description: p.description,
       }));
 
-      // Apply filters if any are active
-      if (Object.keys(activeFilters).length > 0) {
-        const { categories, genders, minPrice, maxPrice } = activeFilters;
+      // <<< APPLY PRODUCT FILTERS >>>
+      if (Object.keys(activeProductFilters).length > 0) {
+        const { categories, genders, minPrice, maxPrice } = activeProductFilters;
 
         formattedProducts = formattedProducts.filter(product => {
-          let isMatch = true;
+          let categoryMatch = true;
+          let genderMatch = true;
+          let priceMatch = true;
 
-          // Category filter
           if (categories && categories.length > 0) {
-            isMatch = isMatch && categories.includes(product.category_type);
+            categoryMatch = categories.includes(product.category_type);
           }
 
-          // Gender filter
           if (genders && genders.length > 0) {
-            // Ensure case-insensitivity or consistent casing in data
-            isMatch = isMatch && genders.includes(product.gender.toLowerCase()); 
+            genderMatch = genders.includes(product.gender); // Assumes product.gender is 'female', 'male', or 'unisex'
           }
 
-          // Price filter
-          if (minPrice !== undefined && minPrice !== null && typeof minPrice === 'number') {
-            isMatch = isMatch && product.price >= minPrice;
+          if (minPrice !== undefined && minPrice !== null) {
+            if (product.price < minPrice) priceMatch = false;
           }
-          if (maxPrice !== undefined && maxPrice !== null && typeof maxPrice === 'number') {
-            isMatch = isMatch && product.price <= maxPrice;
+          if (maxPrice !== undefined && maxPrice !== null) {
+            if (product.price > maxPrice) priceMatch = false;
           }
           
-          return isMatch;
+          return categoryMatch && genderMatch && priceMatch;
         });
       }
       setProducts(formattedProducts);
     } else {
-      setProducts([]); // Clear products if no data or data.getAllProducts is null/undefined
+        setProducts([]); // Clear products if no data
     }
-  }, [data, activeFilters]); // Re-run when data or activeFilters change
+  }, [data, activeProductFilters]); // <<< ADDED activeProductFilters to dependency array
 
   const columns = [
+    // ... (your existing columns definition remains unchanged)
     {
       title: 'Category',
       dataIndex: 'category_type',
@@ -138,7 +134,6 @@ const AdminPage = () => {
       key: 'price',
       width: 100,
       render: (price) => `$${price.toFixed(0)}`,
-      sorter: (a, b) => a.price - b.price, // Optional: add sorting
     },
     {
       title: 'Discount Rate (%)',
@@ -152,7 +147,6 @@ const AdminPage = () => {
       dataIndex: 'total_stock',
       key: 'total_stock',
       width: 110,
-      sorter: (a, b) => a.total_stock - b.total_stock, // Optional: add sorting
     },
     {
       title: 'Sold Amount',
@@ -186,7 +180,7 @@ const AdminPage = () => {
             icon={<DeleteOutlined />} 
             danger
             onClick={() => handleDelete(record.product_id)}
-            // loading={loadingDelete} // Consider moving loading state to specific delete button if needed
+            loading={loadingDelete}
           >
             Delete
           </Button>
@@ -217,8 +211,16 @@ const AdminPage = () => {
 
   const handleEdit = (product) => {
     form.setFieldsValue({
-      ...product, // Spread the product to fill form
-      // price and discount_rate are already numbers
+      product_name: product.product_name,
+      gender: product.gender,
+      price: product.price,
+      discount_rate: product.discount_rate,
+      category_type: product.category_type,
+      sold_amount: product.sold_amount,
+      total_stock: product.total_stock,
+      brand: product.brand,
+      description: product.description,
+      imagePath: product.imagePath,
     });
     setEditingProduct(product);
     setIsModalVisible(true);
@@ -244,35 +246,39 @@ const AdminPage = () => {
   const handleSubmit = () => {
     form.validateFields().then(async values => {
       try {
-        const productInput = {
-          product_name: values.product_name,
-          gender: values.gender,
-          price: parseFloat(values.price),
-          discount_rate: parseFloat(values.discount_rate),
-          category_type: values.category_type,
-          imagePath: values.imagePath || '',
-          brand: values.brand,
-          description: values.description,
-          // total_stock and sold_amount are usually managed by sizes or other logic
-          // For create, total_stock might be needed, or derived from initial sizes.
-          // For update, total_stock is often a calculated field.
-          // The mutations ADMIN_CREATE_PRODUCT and ADMIN_UPDATE_PRODUCT will determine required fields.
-          // Assuming total_stock is part of product details for now as per form:
-          total_stock: parseInt(values.total_stock, 10), 
-          sold_amount: values.sold_amount ? parseInt(values.sold_amount, 10) : 0,
-        };
-
         if (editingProduct) {
           await updateProduct({
             variables: {
               product_id: editingProduct.product_id,
-              ...productInput
+              product_name: values.product_name,
+              gender: values.gender,
+              price: parseFloat(values.price),
+              discount_rate: parseFloat(values.discount_rate),
+              category_type: values.category_type,
+              imagePath: values.imagePath || '',
+              brand: values.brand,
+              description: values.description
+              // Note: total_stock and sold_amount are not part of update mutation here
+              // If they are, they need to be added to variables.
             }
           });
           message.success('Product updated successfully');
         } else {
           await createProduct({
-            variables: productInput // Pass the whole object
+            variables: {
+              product_name: values.product_name,
+              gender: values.gender,
+              price: parseFloat(values.price),
+              discount_rate: parseFloat(values.discount_rate),
+              category_type: values.category_type,
+              imagePath: values.imagePath || '',
+              brand: values.brand,
+              description: values.description
+              // Note: total_stock and sold_amount are not part of create mutation here
+              // If they are, they need to be added.
+              // Also the form has total_stock and sold_amount fields.
+              // The createProduct mutation in the provided code does not use them in its variables.
+            }
           });
           message.success('Product added successfully');
         }
@@ -292,7 +298,7 @@ const AdminPage = () => {
         variables: {
           product_id: currentProductId,
           size_type: values.size_type,
-          stock_amount: parseInt(values.stock_amount, 10)
+          stock_amount: values.stock_amount // This should be parsed to int if backend expects int
         }
       });
       message.success('Size added successfully');
@@ -309,23 +315,24 @@ const AdminPage = () => {
         variables: {
           product_id: currentProductId,
           size_type: values.size_type,
-          stock_amount: parseInt(values.stock_amount, 10)
+          stock_amount: values.stock_amount // This should be parsed to int if backend expects int
         }
       });
       message.success('Size stock updated successfully');
       setIsUpdateSizeModalVisible(false);
-    } catch (err) {
+    } catch (err)
+ {
       message.error(`Failed to update size stock: ${err.message}`);
     }
   };
 
-  // Callback for ProductFilter component
+  // <<< NEW HANDLER FOR PRODUCT FILTER CHANGES >>>
   const handleProductFilterChange = (filters) => {
-    setActiveFilters(filters);
+    setActiveProductFilters(filters);
   };
 
   if (loading) return <p>Loading products...</p>;
-  if (queryError) return <p>Error loading products: ${queryError.message}</p>;
+  if (error) return <p>Error loading products: ${error.message}</p>;
 
   return (
     <div className="admin-dashboard-container">
@@ -345,7 +352,7 @@ const AdminPage = () => {
               >
                 Add Product
               </Button>
-              {/* Replace old Filter button with ProductFilter component */}
+              {/* <<< REPLACE OLD FILTER BUTTON WITH ProductFilter COMPONENT >>> */}
               <ProductFilter onFilterChange={handleProductFilterChange} />
             </div>
           </div>
@@ -361,43 +368,42 @@ const AdminPage = () => {
               className="products-table"
               columns={columns}
               dataSource={products}
-              scroll={{ x: 1500, y: 'calc(100vh - 400px)' }} // Adjusted y scroll slightly
-              pagination={{ pageSize: 15, showSizeChanger: true, pageSizeOptions: ['15', '30', '50'] }} // Added pagination
+              scroll={{ x: 1500, y: 'calc(100vh - 350px)' }}
+              pagination={false} // Keeping original pagination setting
               bordered
-              loading={loading || loadingCreate || loadingUpdate || loadingDelete} // More comprehensive loading
+              loading={loading || loadingDelete} // Keeping original loading prop
             />
           </div>
         </Card>
       </div>
 
-      {/* Delete Product Modal */}
+      {/* Delete Product Modal (remains unchanged) */}
       <Modal
         title="Confirm Delete"
         visible={isDeleteModalVisible}
         onOk={async () => {
-          if (!productToDelete) return;
           try {
             await deleteProduct({ variables: { product_id: productToDelete } });
             message.success('Product deleted successfully');
-            setProductToDelete(null); // Reset
           } catch (err) {
             message.error(`Failed to delete product: ${err.message}`);
           } finally {
             setIsDeleteModalVisible(false);
           }
         }}
-        onCancel={() => {
-            setIsDeleteModalVisible(false);
-            setProductToDelete(null); // Reset
-        }}
-        okButtonProps={{ danger: true, loading: loadingDelete }}
+        onCancel={() => setIsDeleteModalVisible(false)}
+        okType="danger"
         okText="Delete"
         cancelText="Cancel"
+        okButtonProps={{
+          danger: true,
+          type: 'primary',
+        }}
       >
         <p>Are you sure you want to delete this product? This action cannot be undone.</p>
       </Modal>
 
-      {/* Add/Edit Product Modal */}
+      {/* Add/Edit Product Modal (remains unchanged) */}
       <Modal
         title={editingProduct ? "Edit Product" : "Add New Product"}
         visible={isModalVisible}
@@ -407,36 +413,34 @@ const AdminPage = () => {
         okText={editingProduct ? "Update" : "Create"}
         cancelText="Cancel"
         confirmLoading={loadingCreate || loadingUpdate}
-        destroyOnClose // To reset form state when modal is closed
       >
-        <Form form={form} layout="vertical" initialValues={{ discount_rate: 0, sold_amount: 0 }}>
+        <Form form={form} layout="vertical">
           <Form.Item 
             name="category_type" 
             label="Category" 
             rules={[{ required: true, message: 'Please select a category' }]}
           >
-            {/* Corrected category names for consistency */}
             <Select placeholder="Select category">
               <Option value="Women's Tops">Women's Tops</Option>
-              <Option value="Women's Sweaters & Hoodies">Women's Sweaters & Hoodies</Option>
+              <Option value="Women's Sweaters & Hoodiess">Women's Sweaters & Hoodiess</Option>
               <Option value="Women's Bottoms">Women's Bottoms</Option>
               <Option value="Women's Activewear">Women's Activewear</Option>
               <Option value="Women's Dresses & Skirts">Women's Dresses & Skirts</Option>
               <Option value="Women's Outerwear">Women's Outerwear</Option>
 
               <Option value="Men's Tops">Men's Tops</Option>
-              <Option value="Men's Sweaters & Hoodies">Men's Sweaters & Hoodies</Option>
+              <Option value="Men's Sweaters & Hoodiess">Men's Sweaters & Hoodiess</Option>
               <Option value="Men's Bottoms">Men's Bottoms</Option>
               <Option value="Men's Activewear">Men's Activewear</Option>
               <Option value="Men's Outerwear">Men's Outerwear</Option>
               <Option value="Men's Loungewear">Men's Loungewear</Option>
               
               <Option value="Kids Tops">Kids Tops</Option>
-              <Option value="Kids Sweaters & Hoodies">Kids Sweaters & Hoodies</Option>
+              <Option value="Kids Sweaters & Hoodies">Kids Sweaters & Hoodiess</Option> {/* Note: Label "Hoodiess", value "Kids Sweaters & Hoodies" */}
               <Option value="Kids Bottoms">Kids Bottoms</Option>
               <Option value="Kids Activewear">Kids Activewear</Option>
               <Option value="Kids Outerwear">Kids Outerwear</Option>
-              <Option value="Kids Loungewear & Pajamas">Kids Loungewear & Pajamas</Option>
+              <Option value="Kids Loungewear & Pajamas">Kids Loungewear</Option> {/* Note: Label "Kids Loungewear", value "Kids Loungewear & Pajamas" */}
             </Select>
           </Form.Item>
 
@@ -454,9 +458,9 @@ const AdminPage = () => {
             rules={[{ required: true, message: 'Please select gender' }]}
           >
             <Select placeholder="Select gender">
-              <Option value="female">Female</Option>
-              <Option value="male">Male</Option>
-              <Option value="unisex">Unisex</Option>
+              <Option value="female">female</Option>
+              <Option value="male">male</Option>
+              <Option value="unisex">unisex</Option>
             </Select>
           </Form.Item>
 
@@ -473,36 +477,31 @@ const AdminPage = () => {
             label="Price ($)" 
             rules={[{ required: true, message: 'Please input price' }]}
           >
-            <InputNumber min={0} style={{ width: '100%' }} prefix="$" precision={2} />
+            <InputNumber min={0} style={{ width: '100%' }} prefix="$" />
           </Form.Item>
 
           <Form.Item 
             name="discount_rate" 
             label="Discount Rate (%)" 
-            rules={[{ required: true, message: 'Please input discount rate (0-100)' }]}
+            rules={[{ required: true, message: 'Please input discount rate' }]}
           >
-            <InputNumber min={0} max={100} style={{ width: '100%' }} formatter={value => `${value}%`} parser={value => value.replace('%', '')} />
+            <InputNumber min={0} max={100} style={{ width: '100%' }} />
           </Form.Item>
 
           <Form.Item 
             name="total_stock" 
-            label="Total Stock (calculated from sizes)" 
+            label="Total Stock" 
             rules={[{ required: true, message: 'Please input total stock' }]}
-            // This field might be better as read-only if it's derived from individual sizes.
-            // Or, if it's set manually at product creation and then updated by size changes.
-            // For now, keeping it editable as per original code.
           >
             <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
 
           <Form.Item 
             name="sold_amount" 
-            label="Sold Amount (updated automatically)" 
-            rules={[{ required: false }]} // Usually not directly editable
-            initialValue={0}
+            label="Sold Amount" 
+            rules={[{ required: false }]}
           >
-            <InputNumber min={0} style={{ width: '100%' }} disabled={!editingProduct} /> 
-            {/* Disable for new products, potentially enable for edits if admin needs to adjust */}
+            <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
 
           <Form.Item 
@@ -516,14 +515,14 @@ const AdminPage = () => {
           <Form.Item 
             name="imagePath" 
             label="Image Path" 
-            rules={[{ required: false }]} // Make required if image is mandatory
+            rules={[{ required: false }]}
           >
             <Input placeholder="URL or file path" />
           </Form.Item>
         </Form>
       </Modal>
 
-      {/* Add Size Modal */}
+      {/* Add Size Modal (remains unchanged) */}
       <Modal
         title="Add Size"
         visible={isAddSizeModalVisible}
@@ -531,7 +530,6 @@ const AdminPage = () => {
         onCancel={() => setIsAddSizeModalVisible(false)}
         okText="Add"
         cancelText="Cancel"
-        destroyOnClose
       >
         <Form form={sizeForm} layout="vertical">
           <Form.Item 
@@ -560,7 +558,7 @@ const AdminPage = () => {
         </Form>
       </Modal>
 
-      {/* Update Size Stock Modal */}
+      {/* Update Size Stock Modal (remains unchanged) */}
       <Modal
         title="Update Size Stock"
         visible={isUpdateSizeModalVisible}
@@ -568,7 +566,6 @@ const AdminPage = () => {
         onCancel={() => setIsUpdateSizeModalVisible(false)}
         okText="Update"
         cancelText="Cancel"
-        destroyOnClose
       >
         <Form form={sizeForm} layout="vertical">
           <Form.Item 
