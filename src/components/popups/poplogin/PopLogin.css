@@ -1,106 +1,124 @@
 .poplogin-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.2);
-    backdrop-filter: blur(5px);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-  
-  .poplogin-modal {
-    position: relative;
-    background-color: white;
-    padding: 40px;
-    border-radius: 10px;
-    width: 350px;
-    max-width: 90%;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    font-family: Arial, sans-serif;
-    text-align: left;
-  }
-  
-  .poplogin-modal h1 {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 10px;
-  }
-  
-  .poplogin-modal p {
-    font-size: 16px;
-    margin-bottom: 20px;
-  }
-  
-  .poplogin-modal label {
-    display: block;
-    font-weight: bold;
-    margin: 10px 0 5px;
-  }
-  
-  .poplogin-modal input[type="text"],
-  .poplogin-modal input[type="password"] {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-    border: 1px solid black;
-    border-radius: 4px;
-  }
-  
-  .poplogin-modal .login-options {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 14px;
-    margin-bottom: 20px;
-  }
-  
-  .poplogin-modal .forgot {
-    text-decoration: underline;
-    cursor: pointer;
-  }
-  
-  .poplogin-modal .login-button {
-    display: block;
-    width: 100%;
-    padding: 12px;
-    background-color: black;
-    color: white;
-    border: none;
-    font-weight: bold;
-    border-radius: 8px;
-    margin: 0 auto;
-    cursor: pointer;
-    font-size: 16px;
-    text-align: center;
-  }
-  
-  .poplogin-modal .register-link {
-    text-align: center;
-    margin-top: 20px;
-    cursor: pointer;
-    text-decoration: underline;
-    font-size: 16px;
-  }
-  
-  .poplogin-modal .error {
-    color: red;
-    font-size: 14px;
-    margin-bottom: 10px;
-  }
-  
-  .poplogin-modal .close-button {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    background: transparent;
-    border: none;
-    font-size: 24px;
-    cursor: pointer;
-    color: #333;
-    line-height: 1;
-  }
-  
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.poplogin-modal {
+  position: relative;
+  background-color: white;
+  padding: 40px;
+  border-radius: 10px;
+  width: 350px;
+  max-width: 90%;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  font-family: Arial, sans-serif;
+  text-align: left;
+}
+
+.poplogin-modal h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.poplogin-modal p {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.poplogin-modal label {
+  display: block;
+  font-weight: bold;
+  margin: 10px 0 5px;
+}
+
+.poplogin-modal input[type="text"],
+.poplogin-modal input[type="password"],
+.poplogin-modal input[type="email"] {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid black;
+  border-radius: 4px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.password-container {
+  position: relative;
+  margin-bottom: 20px; /* spacing below password field */
+}
+
+.password-container input {
+  width: 100%;
+  padding-right: 40px;
+}
+
+.eye-icon {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: #333;
+  font-size: 1rem;
+}
+
+.poplogin-modal .login-button {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  background-color: black;
+  color: white;
+  border: none;
+  font-weight: bold;
+  border-radius: 8px;
+  margin-top: 10px;
+  margin-bottom: 15px;
+  cursor: pointer;
+  font-size: 16px;
+  text-align: center;
+}
+
+.poplogin-modal .register-info {
+  text-align: center;
+  font-size: 14px;
+}
+
+.register-link {
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: bold;
+  color: #000;
+}
+
+.register-link:hover {
+  color: #0077cc;
+}
+
+.poplogin-modal .error {
+  color: red;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.poplogin-modal .close-button {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #333;
+  line-height: 1;
+}
