@@ -133,7 +133,7 @@ const ProductFilter = ({ onFilterChange }) => {
             </Checkbox.Group>
           </Form.Item>
 
-          <Divider orientation="left">Price Range ($)</Divider>
+          <Divider orientation="left">Price Range (Rp)</Divider>
           <Space align="baseline">
             <Form.Item name="minPrice">
               <InputNumber placeholder="Min Price" min={0} style={{width: "120px"}} precision={2} />

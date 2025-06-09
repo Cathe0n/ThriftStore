@@ -188,11 +188,11 @@ const AdminPage = () => {
       width: 120,
     },
     {
-      title: 'Price ($)',
+      title: 'Price (Rp)',
       dataIndex: 'price',
       key: 'price',
       width: 100,
-      render: (price) => `$${price.toFixed(0)}`,
+      render: (price) => `Rp ${price.toFixed(0)}`,
     },
     {
       title: 'Discount Rate (%)',
@@ -534,7 +534,7 @@ const AdminPage = () => {
 
           <Form.Item 
             name="price" 
-            label="Price ($)" 
+            label="Price (Rp)" 
             rules={[{ required: true, message: 'Please input price' }]}
           >
             <InputNumber min={0} style={{ width: '100%' }} prefix="$" />
