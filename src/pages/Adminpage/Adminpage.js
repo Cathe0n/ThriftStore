@@ -390,12 +390,13 @@ const AdminPage = () => {
 
         <Card className="products-card">
           <h2 className="section-title">
-            <span>Current Products</span>
+            <span>Current Products:&nbsp;</span>
             <span className="product-count">{products.length} items</span>
           </h2>
           <div className="products-table-container">
             <Table
               className="products-table"
+              id="content"
               columns={columns}
               dataSource={products}
               scroll={{ x: 'calc(100% - 100px', y: 'calc(100vh - 350px)' }}

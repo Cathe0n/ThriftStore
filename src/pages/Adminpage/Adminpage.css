@@ -9,16 +9,25 @@
   padding: 2rem;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
+}
+
+#content {
+  overflow: auto;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .dashboard-content {
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
-  display: grid;
+  display: flex;
+  flex-direction: column;
   grid-template-rows: auto 1fr;
   gap: 1.5rem;
-  height: calc(100vh - 4rem); /* Full viewport minus padding */
+  /* height: calc(100vh - 4rem); Full viewport minus padding */
 }
 
 /* Header Section */
@@ -49,12 +58,13 @@
   background: white;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  padding: 1.5rem;
+  padding: 10px;
   border: 1px solid #e2e8f0;
-  display: flex;
+  display: auto;
   flex-direction: column;
-  flex: 1;
-  min-height: 0; /* Fix for Firefox flexbox */
+  flex: unset;
+  overflow: visible;
+  min-height: auto; /* Fix for Firefox flexbox */
 }
 
 .section-title {
@@ -85,22 +95,25 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  width: 100%;
 }
 
 .products-table {
   flex: 1;
-  overflow: auto;
+  overflow: visible;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
 }
 
 .products-table .ant-table {
-  height: 100%;
+  height: auto;
+  width: 100%;
 }
 
 .products-table .ant-table-container {
-  height: 100%;
-  display: flex;
+  height: auto;
+  width: 100%;
+  display: block;
   flex-direction: column;
 }
 
