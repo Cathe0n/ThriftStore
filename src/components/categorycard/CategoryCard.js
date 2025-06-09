@@ -41,7 +41,7 @@ const CategoryCard = ({ item, isProduct }) => {
           <p className="category-brand">{item.brand}</p>
         )}
         {isProduct && item.price && (
-          <p className="category-price">${item.price.toLocaleString()}</p>
+          <p className="category-price">Rp {item.price.toLocaleString()}</p>
         )}
       </div>
     </div>
