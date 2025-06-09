@@ -258,6 +258,13 @@ const AdminPage = () => {
           >
             Add Size
           </Button>
+          <Button 
+            type="link" 
+            onClick={() => handleUpdateSizeStock(record.product_id)}
+            style={{ color: '#52c41a' }}
+          >
+            Update Stock
+          </Button>
         </div>
       ),
     },
@@ -295,6 +302,12 @@ const AdminPage = () => {
     setCurrentProductId(productId);
     sizeForm.resetFields();
     setIsAddSizeModalVisible(true);
+  };
+
+  const handleUpdateSizeStock = (productId) => {
+    setCurrentProductId(productId);
+    sizeForm.resetFields();
+    setIsUpdateSizeModalVisible(true);
   };
 
   const handleSubmit = () => {
@@ -416,6 +429,7 @@ const AdminPage = () => {
               className="products-table"
               columns={columns}
               dataSource={products}
+              scroll={{ x: 1500, y: 'calc(100vh - 350px)' }}
               pagination={false} 
               bordered
               loading={loading || loadingDelete} 
@@ -604,6 +618,15 @@ const AdminPage = () => {
         </Form>
       </Modal>
 
+    
+      <Modal
+        title="Update Size Stock"
+        visible={isUpdateSizeModalVisible}
+        onOk={handleUpdateSizeStockSubmit}
+        onCancel={() => setIsUpdateSizeModalVisible(false)}
+        okText="Update"
+        cancelText="Cancel"
+      >
         <Form form={sizeForm} layout="vertical">
           <Form.Item 
             name="size_type" 
@@ -629,6 +652,7 @@ const AdminPage = () => {
             <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
         </Form>
+      </Modal>
     </div>
   );
 };
