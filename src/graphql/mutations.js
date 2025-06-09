@@ -163,12 +163,12 @@ export const GET_DISCOUNTED_PRODUCTS = gql`
 
 export const GET_LOW_STOCK_PRODUCTS = gql`
   query GetLowStockProducts {
-    getLowStockProducts {
-      _id
-      name
+    getLimitedStockProducts {
+      id
+      product_name
       price
-      image
-      quantity
+      imagePath
+      Total_stock
     }
   }
 `;
