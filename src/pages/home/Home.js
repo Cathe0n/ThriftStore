@@ -103,7 +103,7 @@ function Home() {
 
   const trendingProducts = formatProducts(trendingData?.getTrendingProducts);
   const discountedProducts = formatProducts(saleData?.getDiscountedProducts);
-  const lowStockProducts = formatProducts(lowStockData?.getLowStockProducts);
+  const lowStockProducts = formatProducts(lowStockData?.getLimitedStockProducts);
 
   const scroll = (ref, direction) => {
     if (ref.current) {
