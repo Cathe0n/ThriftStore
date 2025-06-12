@@ -1,14 +1,18 @@
 # VERO Thrift Store - E-commerce Platform
 
 [![Swiss German University](https://img.shields.io/badge/Swiss%20German%20University-Final%20Project-blue)](https://sgu.ac.id/)
-[![Language-JavaScript](https://img.shields.io/badge/Language-JavaScript-yellow)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![Language-Go](https://img.shields.io/badge/Language-Go-blue)](https://golang.org/)
-[![Framework-ExpressJS](https://img.shields.io/badge/Framework-Express.js-lightgrey)](https://expressjs.com/)
-[![Language-React](https://img.shields.io/badge/Language-React-blue)](https://reactjs.org/)
-[![Framework-Django](https://img.shields.io/badge/Framework-Django-darkgreen)](https://www.djangoproject.com/)
-[![GraphQL](https://img.shields.io/badge/API-GraphQL-e10098)](https://graphql.org/)
-[![Database-MongoDB](https://img.shields.io/badge/Database-MongoDB-4EA94B)](https://www.mongodb.com/)
-[![Docker](https://img.shields.io/badge/Docker-Enabled-blue)](https://www.docker.com/)
+[![Language-JavaScript](https://img.shields.io/badge/Language-JavaScript-F7DF1E?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![Language-Go](https://img.shields.io/badge/Language-Go-00ADD8?logo=go&logoColor=white)](https://golang.org/)
+[![Language-React](https://img.shields.io/badge/Language-React-61DAFB?logo=react&logoColor=black)](https://reactjs.org/)
+
+[![Framework-ExpressJS](https://img.shields.io/badge/Framework-Express.js-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![Framework-Django](https://img.shields.io/badge/Framework-Django-092E20?logo=django&logoColor=white)](https://www.djangoproject.com/)
+
+[![API-GraphQL](https://img.shields.io/badge/API-GraphQL-E10098?logo=graphql&logoColor=white)](https://graphql.org/)
+[![Database-MongoDB](https://img.shields.io/badge/Database-MongoDB-4EA94B?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+
+[![Docker](https://img.shields.io/badge/Tool-Docker-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
+
 
 VERO Thrift Store is an e-commerce website specifically designed for buying and selling used clothing. This platform promotes sustainability and affordability in fashion by offering users a streamlined and intuitive experience.
 
