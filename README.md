@@ -4,6 +4,7 @@
 [![Language-JavaScript](https://img.shields.io/badge/Language-JavaScript-yellow)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![Language-Go](https://img.shields.io/badge/Language-Go-blue)](https://golang.org/)
 [![Framework-ExpressJS](https://img.shields.io/badge/Framework-Express.js-lightgrey)](https://expressjs.com/)
+[![Language-React](https://img.shields.io/badge/Language-React-blue)](https://reactjs.org/)
 [![Framework-Django](https://img.shields.io/badge/Framework-Django-darkgreen)](https://www.djangoproject.com/)
 [![GraphQL](https://img.shields.io/badge/API-GraphQL-e10098)](https://graphql.org/)
 [![Database-MongoDB](https://img.shields.io/badge/Database-MongoDB-4EA94B)](https://www.mongodb.com/)
