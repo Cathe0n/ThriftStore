@@ -1,5 +1,5 @@
 <p align="center">
-  <img width="427" height="240" alt="Vero-Demo-Gif" src="[https://github.com/user-attachments/assets/4c1a6c73-d63c-4dc3-886f-c2e312abda68](https://github.com/user-attachments/assets/76eccd46-249d-4b31-8aa2-6d7eae0f1439)" />
+  <img width="427" height="240" alt="Vero-Demo-Gif" src="https://github.com/user-attachments/assets/76eccd46-249d-4b31-8aa2-6d7eae0f1439" />
 </p>
 # VERO Thrift Store - E-commerce Platform
 
